@@ -24,6 +24,13 @@ std::vector<std::vector<int>> skater(unsigned int k, const std::vector<std::vect
                                      const std::string& distance_method, const std::vector<double>& bound_vals,
                                      double min_bound);
 
+std::vector<std::vector<int>> azp_greedy(int p, const std::vector<std::vector<unsigned int>>& neighbors,
+                                        const std::vector<std::vector<double>>& data, int inits,
+                                        const std::string& distance_method, int rnd_seed);
+std::vector<std::vector<int>> maxp_greedy(const std::vector<std::vector<unsigned int>>& neighbors,
+                                          const std::vector<std::vector<double>>& data, int iterations,
+                                          const std::string& distance_method, int rnd_seed);
+
 }  // namespace geoda
 
 #endif

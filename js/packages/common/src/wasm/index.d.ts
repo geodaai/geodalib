@@ -942,6 +942,29 @@ export interface GeoDaModule {
   ): VecVecInt;
 
   /**
+   * AZP (Automatic Zoning Procedure) greedy regionalization
+   */
+  azpGreedy(
+    p: UnsignedInt,
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    inits: UnsignedInt,
+    distanceMethod: string,
+    rndSeed: number
+  ): VecVecInt;
+
+  /**
+   * Max-P greedy regionalization
+   */
+  maxpGreedy(
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    iterations: UnsignedInt,
+    distanceMethod: string,
+    rndSeed: number
+  ): VecVecInt;
+
+  /**
    * get the nearest neighbors of a collection of geometries
    * @param geometries the collection of geometries
    * @param threshold the distance threshold

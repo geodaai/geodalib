@@ -7,6 +7,8 @@
 #include "clustering-api.h"
 #include "schc_wrapper.h"
 #include "redcap_wrapper.h"
+#include "azp_wrapper.h"
+#include "maxp_wrapper.h"
 #include "../data/data.h"
 #include "../weights/vector-weight.h"
 
@@ -81,4 +83,28 @@ std::vector<std::vector<int>> geoda::skater(unsigned int k, const std::vector<st
                                             const std::vector<double>& bound_vals, double min_bound) {
   return geoda::redcap(k, neighbors, data, scale_method, "firstorder-singlelinkage", distance_method, bound_vals,
                        min_bound);
+}
+
+std::vector<std::vector<int>> geoda::azp_greedy(int p, const std::vector<std::vector<unsigned int>>& neighbors,
+                                                const std::vector<std::vector<double>>& data, int inits,
+                                                const std::string& distance_method, int rnd_seed) {
+  GeoDaWeight* w = new VectorWeight(neighbors);
+  std::vector<std::pair<double, std::vector<double>>> min_bounds, max_bounds;
+  std::vector<int> init_regions;
+  azp_greedy_wrapper azp(p, w, data, inits, min_bounds, max_bounds, init_regions, distance_method, rnd_seed, 0);
+  std::vector<std::vector<int>> result = azp.GetClusters();
+  delete w;
+  return result;
+}
+
+std::vector<std::vector<int>> geoda::maxp_greedy(const std::vector<std::vector<unsigned int>>& neighbors,
+                                                 const std::vector<std::vector<double>>& data, int iterations,
+                                                 const std::string& distance_method, int rnd_seed) {
+  GeoDaWeight* w = new VectorWeight(neighbors);
+  std::vector<std::pair<double, std::vector<double>>> min_bounds, max_bounds;
+  std::vector<int> init_regions;
+  maxp_greedy_wrapper mp(w, data, iterations, min_bounds, max_bounds, init_regions, distance_method, rnd_seed, 1, 0);
+  std::vector<std::vector<int>> result = mp.GetClusters();
+  delete w;
+  return result;
 }

@@ -44,6 +44,7 @@
 
 ## Functions
 
+- [azpGreedy](functions/azpGreedy.md)
 - [calculateRates](functions/calculateRates.md)
 - [CheckGeometryType](functions/CheckGeometryType.md)
 - [createLineCollectionFromBinaryFeatures](functions/createLineCollectionFromBinaryFeatures.md)
@@ -88,6 +89,7 @@
 - [isHexagonIdLayerData](functions/isHexagonIdLayerData.md)
 - [isPointLayerData](functions/isPointLayerData.md)
 - [lineToFeature](functions/lineToFeature.md)
+- [maxpGreedy](functions/maxpGreedy.md)
 - [naturalBreaks](functions/naturalBreaks.md)
 - [percentileBreaks](functions/percentileBreaks.md)
 - [polygonToFeature](functions/polygonToFeature.md)

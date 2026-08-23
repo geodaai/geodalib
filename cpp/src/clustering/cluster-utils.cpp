@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstdlib>
 #include "cluster.h"
+#include "../weights/vector-weight.h"
 #include <vector>
 
 #include "cluster-utils.h"
@@ -150,3 +151,30 @@ double cuttree(int nelements, GdaNode* tree, int nclusters, int clusterid[]) {
   free(nodeid);
   return tree[n - 1].distance;
 }
+
+namespace geoda {
+double euclidean_distance(const std::vector<double>& a, const std::vector<double>& b) {
+  double sum = 0.0;
+  for (size_t i = 0; i < a.size(); ++i) { double d = a[i] - b[i]; sum += d * d; }
+  return std::sqrt(sum);
+}
+double euclidean_distance(double* a, const std::vector<double>& b) {
+  double sum = 0.0;
+  for (size_t i = 0; i < b.size(); ++i) { double d = a[i] - b[i]; sum += d * d; }
+  return std::sqrt(sum);
+}
+void shuffle(std::vector<int>& items, Xoroshiro128Random& rng) {
+  for (size_t i = items.size() - 1; i > 0; --i) {
+    size_t j = static_cast<size_t>(rng.nextInt(static_cast<int>(i + 1)));
+    std::swap(items[i], items[j]);
+  }
+}
+
+}  // namespace geoda
+
+namespace Gda {
+geoda::GalElement* GetGalElement(GeoDaWeight* w) {
+  VectorWeight* vw = dynamic_cast<VectorWeight*>(w);
+  return vw ? vw->gal : 0;
+}
+}  // namespace Gda

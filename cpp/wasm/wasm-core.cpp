@@ -107,6 +107,8 @@ EMSCRIPTEN_BINDINGS(wasmgeoda) {
   emscripten::function("schc", &geoda::schc);
   emscripten::function("redcap", &geoda::redcap);
   emscripten::function("skater", &geoda::skater);
+  emscripten::function("azpGreedy", &geoda::azp_greedy);
+  emscripten::function("maxpGreedy", &geoda::maxp_greedy);
   emscripten::function("getDistanceWeights", &geoda::distance_weights);
   emscripten::function("getDistanceThresholds", &geoda::get_distance_thresholds);
   emscripten::function("getPolygonContiguityWeights", &geoda::polygon_contiguity_weights);
