@@ -3,6 +3,7 @@
 
 #ifndef GEODA_DISTANCE_WEIGHTS_H
 #define GEODA_DISTANCE_WEIGHTS_H
+#include <string>
 #include <vector>
 
 #include "geometry/geometry.h"
@@ -58,6 +59,33 @@ std::vector<double> get_distance_thresholds(const GeometryCollection& geoms, boo
  * @return std::vector<std::vector<unsigned int>> The 2D vector of k-nearest neighbors
  */
 std::vector<std::vector<unsigned int>> knearest_neighbors(const GeometryCollection& geoms, unsigned int k);
+
+/**
+ * @brief Compute kernel weights for a collection of geometries using k-nearest neighbors.
+ *
+ * For each geometry, the k nearest neighbors are found. When adaptive_bandwidth is true, the
+ * bandwidth for each observation is the distance to its k-th nearest neighbor; otherwise a single
+ * global bandwidth (the maximum of all k-th nearest neighbor distances) is used. Each neighbor's
+ * weight is computed by applying the chosen kernel to the distance ratio z = distance^power / bandwidth,
+ * following Anselin and Rey (2010), table 5.4. Each row is stored as an interleaved list of
+ * [neighborIndex, weight] pairs, with the diagonal (self) element appended last.
+ *
+ * @param geoms The geometry collection. If the collection is not a point collection, the centroids of
+ * the geometries are used.
+ * @param k The number of nearest neighbors.
+ * @param kernel The kernel function to apply. One of: triangular, uniform, epanechnikov, quartic, gaussian.
+ * @param is_mile If true, use mile as the distance unit, otherwise use kilometer.
+ * @param use_kernel_diagonals If true, the diagonal (self) weight is kernel(1.0); otherwise it is 1.0.
+ * @param power The power (or exponent) applied to the distance before normalizing by the bandwidth.
+ * @param adaptive_bandwidth If true, use the k-th nearest neighbor distance of each observation as its
+ * bandwidth; otherwise use the global maximum k-th nearest neighbor distance.
+ * @param is_inverse If true, apply the inverse distance weighting (distance^power) before the kernel.
+ * @return std::vector<std::vector<double>> The 2D vector of kernel weights as [neighborIndex, weight] pairs.
+ */
+std::vector<std::vector<double>> kernel_knn_weights(const GeometryCollection& geoms, unsigned int k,
+                                                    const std::string& kernel, bool is_mile,
+                                                    bool use_kernel_diagonals = false, double power = 1.0,
+                                                    bool adaptive_bandwidth = true, bool is_inverse = false);
 
 /**
  * @brief  Compute contiguity weights for a collection of geometries using the centroids of the geometries.

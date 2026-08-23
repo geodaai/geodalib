@@ -1,6 +1,7 @@
 set (WEIGHTS_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/geometry/geometry.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/weights/distance-weights.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/weights/kernel-knn-weights.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/weights/contiguity-weights.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/weights/geoda-weight.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/weights/vector-weight.cpp
