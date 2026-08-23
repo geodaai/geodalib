@@ -10,6 +10,8 @@
 - [LocalMoranProps](type-aliases/LocalMoranProps.md)
 - [LocalMoranResult](type-aliases/LocalMoranResult.md)
 - [MultivariateLocalGearyProps](type-aliases/MultivariateLocalGearyProps.md)
+- [MultivariateQuantileLisaProps](type-aliases/MultivariateQuantileLisaProps.md)
+- [MultivariateQuantileLisaResult](type-aliases/MultivariateQuantileLisaResult.md)
 - [QuantileLisaProps](type-aliases/QuantileLisaProps.md)
 
 ## Functions
@@ -21,6 +23,7 @@
 - [localGStar](functions/localGStar.md)
 - [localMoran](functions/localMoran.md)
 - [multivariateLocalGeary](functions/multivariateLocalGeary.md)
+- [multivariateQuantileLisa](functions/multivariateQuantileLisa.md)
 - [quantileLisa](functions/quantileLisa.md)
 - [resetWASM](functions/resetWASM.md)
 - [setDeliveryWASM](functions/setDeliveryWASM.md)
