@@ -5,16 +5,29 @@ import { SpatialGeometry, getGeometryCollection } from '../geometry/utils';
 import { getContiguityNeighborsFromGeomCollection } from './contiguity-neighbors';
 import { getDistanceNeighborsFromGeomCollection } from './distance-neighbors';
 import { getNearestNeighborsFromGeomCollection } from './nearest-neighbors';
+import { getKernelWeightsFromGeomCollection } from './kernel-weights';
 import { getMetaFromWeights } from './weights-stats';
 import { WeightsMeta } from './weights-stats';
 
 export type CreateWeightsProps = {
-  weightsType: 'knn' | 'threshold' | 'queen' | 'rook';
+  weightsType: 'knn' | 'threshold' | 'queen' | 'rook' | 'kernel';
   k?: number;
   distanceThreshold?: number;
   isQueen?: boolean;
   isRook?: boolean;
   isMile?: boolean;
+  /**
+   * The bandwidth for kernel weights
+   */
+  bandwidth?: number;
+  /**
+   * The kernel function for kernel weights
+   */
+  kernel?: string;
+  /**
+   * Whether the diagonal (self) weight is kernel(1.0) instead of 1.0
+   */
+  useKernelDiagonals?: boolean;
   /**
    * Whether to use centroids for neighbor calculations
    */
@@ -69,6 +82,9 @@ export async function createWeights({
   isQueen,
   distanceThreshold,
   isMile,
+  bandwidth,
+  kernel,
+  useKernelDiagonals,
   useCentroids,
   precisionThreshold,
   orderOfContiguity,
@@ -131,6 +147,23 @@ export async function createWeights({
       type: weightsType,
       symmetry: 'symmetric',
       threshold: distanceThreshold || 0.0,
+      isMile: isMile || false,
+    };
+  } else if (weightsType === 'kernel') {
+    weights = await getKernelWeightsFromGeomCollection({
+      geomCollection,
+      bandwidth: bandwidth || 0.0,
+      kernel: kernel || 'gaussian',
+      isMile: isMile || false,
+      useKernelDiagonals: useKernelDiagonals !== undefined ? useKernelDiagonals : false,
+    });
+
+    weightsMeta = {
+      ...getMetaFromWeights(weights, true),
+      type: weightsType,
+      symmetry: 'asymmetric',
+      bandwidth: bandwidth || 0.0,
+      kernel: kernel || 'gaussian',
       isMile: isMile || false,
     };
   } else {
