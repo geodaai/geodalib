@@ -5,6 +5,7 @@
 ## Type Aliases
 
 - [BivariateLocalMoranProps](type-aliases/BivariateLocalMoranProps.md)
+- [LocalBiJoinCountProps](type-aliases/LocalBiJoinCountProps.md)
 - [LocalGearyProps](type-aliases/LocalGearyProps.md)
 - [LocalGProps](type-aliases/LocalGProps.md)
 - [LocalJoinCountProps](type-aliases/LocalJoinCountProps.md)
@@ -19,6 +20,7 @@
 
 - [bivariateLocalMoran](functions/bivariateLocalMoran.md)
 - [initWASM](functions/initWASM.md)
+- [localBiJoinCount](functions/localBiJoinCount.md)
 - [localG](functions/localG.md)
 - [localGeary](functions/localGeary.md)
 - [localGStar](functions/localGStar.md)
