@@ -878,6 +878,13 @@ export interface GeoDaModule {
   getNearestNeighbors(geometries: GeometryCollection, k: UnsignedInt): VecVecUInt;
 
   /**
+   * Make clusters spatially contiguous
+   * @param clusters list of clusters (each a list of observation indices)
+   * @param neighbors spatial weights matrix as adjacency list
+   */
+  makeSpatial(clusters: VecVecInt, neighbors: VecVecUInt): VecVecInt;
+
+  /**
    * get the nearest neighbors of a collection of geometries
    * @param geometries the collection of geometries
    * @param threshold the distance threshold

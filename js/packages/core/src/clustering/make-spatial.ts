@@ -1,0 +1,54 @@
+// SPDX-License-Identifier: MIT
+// Copyright contributors to the geodalib project
+
+import { initWASM } from '../init';
+
+/**
+ * Makes a set of clusters spatially contiguous by reassigning disconnected
+ * components, mirroring pygeoda's `make_spatial`.
+ *
+ * ## Example
+ * ```ts
+ * import { makeSpatial } from '@geoda/core';
+ *
+ * const clusters = [[0, 1, 2], [3, 4]];
+ * const neighbors = [[1], [0, 2], [1, 3], [2, 4], [3]];
+ * const result = await makeSpatial({ clusters, neighbors });
+ * ```
+ */
+export async function makeSpatial({
+  clusters,
+  neighbors,
+}: {
+  /** list of clusters, each a list of observation indices */
+  clusters: number[][];
+  /** spatial weights matrix as adjacency list */
+  neighbors: number[][];
+}): Promise<number[][]> {
+  const wasm = await initWASM();
+
+  const wasmClusters = new wasm.VecVecInt();
+  for (const c of clusters) {
+    const wc = new wasm.VectorInt();
+    for (const e of c) wc.push_back(e);
+    wasmClusters.push_back(wc);
+  }
+
+  const wasmNeighbors = new wasm.VecVecUInt();
+  for (const nbrs of neighbors) {
+    const wn = new wasm.VectorUInt();
+    for (const n of nbrs) wn.push_back(n);
+    wasmNeighbors.push_back(wn);
+  }
+
+  const result = wasm.makeSpatial(wasmClusters, wasmNeighbors);
+
+  const out: number[][] = [];
+  for (let i = 0; i < result.size(); ++i) {
+    const row = result.get(i);
+    const vals: number[] = [];
+    for (let j = 0; j < row.size(); ++j) vals.push(row.get(j));
+    out.push(vals);
+  }
+  return out;
+}

@@ -4,7 +4,9 @@ outline: deep
 
 # API References
 
+
 ## Mapping
+
 
 ### Basic Mapping
 
@@ -23,11 +25,13 @@ outline: deep
 - [Spatial Rate](/api/core/src/functions/spatialRate)
 - [Spatial Empirical Bayes](/api/core/src/functions/spatialEmpiricalBayes)
 
-### Other
+### Cartogram
 
 - [Cartogram](/api/core/src/functions/cartogram)
 - [Thiessen Polygons](/api/core/src/functions/thiessenPolygons)
 - [Minimum Spanning Tree](/api/core/src/functions/getMinimumSpanningTree)
+
+
 
 ## Data Exploration
 
@@ -38,17 +42,7 @@ outline: deep
 - [Range Standardization](/api/core/src/functions/rangeStandardize)
 - [Spatial Lagged Variable](/api/core/src/functions/spatialLag)
 
-## Spatial Operations
 
-### Geometric Operations
-
-- [Centroid](/api/core/src/functions/getCentroids)
-- [Buffer](/api/core/src/functions/getBuffers)
-- [Area](/api/core/src/functions/getArea)
-- [Length](/api/core/src/functions/getLength)
-- [Perimeter](/api/core/src/functions/getPerimeter)
-- [Spatial Dissolve](/api/core/src/functions/spatialDissolve)
-- [Spatial Join](/api/core/src/functions/spatialJoin)
 
 ## Spatial Weights
 
@@ -70,7 +64,10 @@ outline: deep
 - Kernel Weights
 - Kernel K-Nearest Neighbors Weights
 
+
+
 ## Spatial Autocorrelation Analysis
+
 
 ### Global Spatial Autocorrelation
 
@@ -81,7 +78,7 @@ outline: deep
 - [Local Moran's I](/api/lisa/src/functions/localMoran)
 - [Bivariate Local Moran's I](/api/lisa/src/functions/bivariateLocalMoran)
 - [Local Getis-Ord G](/api/lisa/src/functions/localG)
-- [Local Getis-Ord G\*](/api/lisa/src/functions/localGStar)
+- [Local Getis-Ord G*](/api/lisa/src/functions/localGStar)
 - [Local Geary's C](/api/lisa/src/functions/localGeary)
 - [Multivariate Local Geary's C](/api/lisa/src/functions/multivariateLocalGeary)
 - Local Join Count
@@ -89,7 +86,10 @@ outline: deep
 - [Spatial Lag](/api/lisa/src/functions/spatialLag)
 - [Spatial Lag Median](/api/lisa/src/functions/spatialLagMedian)
 
+
+
 ## Spatial Clustering
+
 
 ### Non-Spatial Clustering
 
@@ -116,8 +116,29 @@ outline: deep
 - [AZP](/api/functions/azp)
 - [Max-p](/api/functions/max-p)
 
+
+
 ## Spatial Regression
 
 - [OLS Regression](/api/regression/src/functions/linearRegression)
 - [Spatial Lag Model](/api/regression/src/functions/spatialLagRegression)
 - [Spatial Error Model](/api/regression/src/functions/spatialError)
+
+
+
+## Spatial Operations
+
+
+### Geometric Operations
+
+- [Centroid](/api/core/src/functions/getCentroids)
+- [Buffer](/api/core/src/functions/getBuffers)
+- [Spatial Dissolve](/api/core/src/functions/spatialDissolve)
+- [Spatial Join](/api/core/src/functions/spatialJoin)
+
+### Other Operations
+
+- [Thiessen Polygons](/api/core/src/functions/thiessenPolygons)
+- [Minimum Spanning Tree](/api/core/src/functions/getMinimumSpanningTree)
+
+
