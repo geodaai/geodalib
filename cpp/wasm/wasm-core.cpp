@@ -103,6 +103,7 @@ EMSCRIPTEN_BINDINGS(wasmgeoda) {
   emscripten::function("cartogram", &geoda::cartogram);
 
   emscripten::function("getNearestNeighbors", &geoda::knearest_neighbors);
+  emscripten::function("neighborMatchTest", &geoda::neighbor_match_test);
   emscripten::function("getDistanceWeights", &geoda::distance_weights);
   emscripten::function("getDistanceThresholds", &geoda::get_distance_thresholds);
   emscripten::function("getPolygonContiguityWeights", &geoda::polygon_contiguity_weights);
