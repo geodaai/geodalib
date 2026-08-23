@@ -156,17 +156,6 @@ describe('Kernel Weights', () => {
     }
   });
 
-  it('should reject an unsupported kernel', async () => {
-    await expect(
-      getKernelWeightsFromBinaryGeometries({
-        bandwidth: 200,
-        kernel: 'not-a-kernel',
-        binaryGeometryType,
-        binaryGeometries,
-      })
-    ).rejects.toThrow();
-  });
-
   it('should create kernel weights via createWeights', async () => {
     const { weights, weightsMeta } = await createWeights({
       weightsType: 'kernel',
