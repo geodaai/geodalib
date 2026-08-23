@@ -29,6 +29,7 @@ export * from './clustering/redcap';
 export * from './clustering/skater';
 export * from './clustering/azp';
 export * from './clustering/maxp';
+export * from './clustering/spatial-validation';
 
 export * from './mapping/quantile';
 export * from './mapping/natural-breaks';

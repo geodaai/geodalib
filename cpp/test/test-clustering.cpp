@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 
 #include "clustering/clustering-api.h"
+#include "test/data.h"
 
 // Points 0<->1<->2<->3<->4 in a chain.
 static std::vector<std::vector<unsigned int>> TEST_NEIGHBORS = {{1}, {0, 2}, {1, 3}, {2, 4}, {3}};
@@ -38,4 +39,13 @@ TEST(CLUSTERING, SKATER) {
   int count = 0;
   for (const auto& c : result) count += static_cast<int>(c.size());
   EXPECT_EQ(count, 5);
+}
+
+TEST(CLUSTERING, SPATIAL_VALIDATION) {
+  // non-collinear points so the convex hull is not degenerate
+  geoda::PointCollection pts(std::vector<double>{0, 1, 0, 2, 2}, std::vector<double>{0, 0, 2, 1, 2},
+                             std::vector<unsigned int>{0, 1, 2, 3, 4}, std::vector<unsigned int>{1, 1, 1, 1, 1});
+  std::vector<int> clusters = {1, 1, 1, 2, 2};
+  ValidationResult result = geoda::spatial_validation(clusters, TEST_NEIGHBORS, pts);
+  EXPECT_EQ(result.spatially_constrained, true);
 }

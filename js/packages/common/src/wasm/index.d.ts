@@ -517,6 +517,59 @@ export class LisaResult {
   delete(): void;
 }
 
+export class Fragmentation {
+  n: number;
+  entropy: number;
+  simpson: number;
+  minClusterSize: number;
+  maxClusterSize: number;
+  meanClusterSize: number;
+  spatiallyContiguous: boolean;
+}
+
+export class Compactness {
+  area: number;
+  perimeter: number;
+  isoperimeterQuotient: number;
+}
+
+export class Diameter {
+  steps: number;
+  ratio: number;
+}
+
+export class JoinCountRatio {
+  cluster: number;
+  n: number;
+  ratio: number;
+}
+
+export class ValidationResult {
+  spatiallyConstrained: boolean;
+  fragmentation: Fragmentation;
+  clusterFragmentation: VectorFragmentation;
+  clusterDiameter: VectorDiameter;
+  clusterCompactness: VectorCompactness;
+  joincountRatio: VectorJoinCountRatio;
+}
+
+export class VectorFragmentation {
+  size(): number;
+  get(i: number): Fragmentation;
+}
+export class VectorDiameter {
+  size(): number;
+  get(i: number): Diameter;
+}
+export class VectorCompactness {
+  size(): number;
+  get(i: number): Compactness;
+}
+export class VectorJoinCountRatio {
+  size(): number;
+  get(i: number): JoinCountRatio;
+}
+
 /**
  * Class for the diagnostic report of regression analysis
  */
@@ -1017,6 +1070,15 @@ export interface GeoDaModule {
     distanceMethod: string,
     rndSeed: number
   ): VecVecInt;
+
+  /**
+   * Spatial validation of a clustering result
+   */
+  spatialValidation(
+    clusters: VectorInt,
+    neighbors: VecVecUInt,
+    geoms: GeometryCollection
+  ): ValidationResult;
 
   /**
    * get the nearest neighbors of a collection of geometries

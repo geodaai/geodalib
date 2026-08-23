@@ -117,6 +117,38 @@ EMSCRIPTEN_BINDINGS(wasmgeoda) {
   emscripten::function("getDistanceThresholds", &geoda::get_distance_thresholds);
   emscripten::function("getPolygonContiguityWeights", &geoda::polygon_contiguity_weights);
   emscripten::function("getPointContiguityWeights", &geoda::point_contiguity_weights);
+  emscripten::class_<Fragmentation>("Fragmentation")
+      .property("n", &Fragmentation::n)
+      .property("entropy", &Fragmentation::entropy)
+      .property("simpson", &Fragmentation::simpson)
+      .property("minClusterSize", &Fragmentation::min_cluster_size)
+      .property("maxClusterSize", &Fragmentation::max_cluster_size)
+      .property("meanClusterSize", &Fragmentation::mean_cluster_size)
+      .property("spatiallyContiguous", &Fragmentation::is_spatially_contiguous);
+  emscripten::register_vector<Fragmentation>("VectorFragmentation");
+  emscripten::class_<Compactness>("Compactness")
+      .property("area", &Compactness::area)
+      .property("perimeter", &Compactness::perimeter)
+      .property("isoperimeterQuotient", &Compactness::isoperimeter_quotient);
+  emscripten::register_vector<Compactness>("VectorCompactness");
+  emscripten::class_<Diameter>("Diameter")
+      .property("steps", &Diameter::steps)
+      .property("ratio", &Diameter::ratio);
+  emscripten::register_vector<Diameter>("VectorDiameter");
+  emscripten::class_<JoinCountRatio>("JoinCountRatio")
+      .property("cluster", &JoinCountRatio::cluster)
+      .property("n", &JoinCountRatio::n)
+      .property("ratio", &JoinCountRatio::ratio);
+  emscripten::register_vector<JoinCountRatio>("VectorJoinCountRatio");
+  emscripten::class_<ValidationResult>("ValidationResult")
+      .property("spatiallyConstrained", &ValidationResult::spatially_constrained)
+      .property("fragmentation", &ValidationResult::fragmentation)
+      .property("clusterFragmentation", &ValidationResult::cluster_fragmentation)
+      .property("clusterDiameter", &ValidationResult::cluster_diameter)
+      .property("clusterCompactness", &ValidationResult::cluster_compactness)
+      .property("joincountRatio", &ValidationResult::joincount_ratio);
+  emscripten::function("spatialValidation", &geoda::spatial_validation);
+
 
   emscripten::function("quantileBreaks", &geoda::quantile_breaks);
   emscripten::function("naturalBreaks", &geoda::natural_breaks);

@@ -40,6 +40,7 @@
 - [SpatialJoinGeometries](type-aliases/SpatialJoinGeometries.md)
 - [SpatialJoinGeometryCollectionProps](type-aliases/SpatialJoinGeometryCollectionProps.md)
 - [SpatialJoinProps](type-aliases/SpatialJoinProps.md)
+- [SpatialValidationResult](type-aliases/SpatialValidationResult.md)
 - [WeightsMeta](type-aliases/WeightsMeta.md)
 
 ## Functions
@@ -114,6 +115,7 @@
 - [spatialJoin](functions/spatialJoin.md)
 - [spatialJoinGeometryCollection](functions/spatialJoinGeometryCollection.md)
 - [spatialRates](functions/spatialRates.md)
+- [spatialValidation](functions/spatialValidation.md)
 - [standardDeviationBreaks](functions/standardDeviationBreaks.md)
 - [standardize](functions/standardize.md)
 - [standardizeMAD](functions/standardizeMAD.md)

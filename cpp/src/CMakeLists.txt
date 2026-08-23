@@ -35,6 +35,8 @@ set (CORE_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/clustering/azp.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/clustering/azp_wrapper.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/clustering/maxp_wrapper.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/clustering/spatial_validation.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/clustering/joincount_ratio.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/clustering/clustering-api.cpp
     ${WEIGHTS_SOURCE_FILES}
 )

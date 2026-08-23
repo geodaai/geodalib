@@ -6,6 +6,8 @@
 
 #include <string>
 #include <vector>
+#include "geometry/geometry.h"
+#include "gda_clustering.h"
 
 namespace geoda {
 
@@ -43,6 +45,10 @@ std::vector<std::vector<int>> maxp_sa(const std::vector<std::vector<unsigned int
 std::vector<std::vector<int>> maxp_tabu(const std::vector<std::vector<unsigned int>>& neighbors,
                                         const std::vector<std::vector<double>>& data, int iterations, int tabu_length,
                                         int conv_tabu, const std::string& distance_method, int rnd_seed);
+
+ValidationResult spatial_validation(const std::vector<int>& clusters,
+                                    const std::vector<std::vector<unsigned int>>& neighbors,
+                                    const GeometryCollection& geoms);
 
 }  // namespace geoda
 
