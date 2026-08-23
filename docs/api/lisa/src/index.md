@@ -4,6 +4,8 @@
 
 ## Type Aliases
 
+- [BatchLocalMoranProps](type-aliases/BatchLocalMoranProps.md)
+- [BatchLocalMoranResult](type-aliases/BatchLocalMoranResult.md)
 - [BivariateLocalMoranProps](type-aliases/BivariateLocalMoranProps.md)
 - [LocalGearyProps](type-aliases/LocalGearyProps.md)
 - [LocalGProps](type-aliases/LocalGProps.md)
@@ -14,6 +16,7 @@
 
 ## Functions
 
+- [batchLocalMoran](functions/batchLocalMoran.md)
 - [bivariateLocalMoran](functions/bivariateLocalMoran.md)
 - [initWASM](functions/initWASM.md)
 - [localG](functions/localG.md)
