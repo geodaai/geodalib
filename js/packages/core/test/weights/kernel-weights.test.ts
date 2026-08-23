@@ -5,10 +5,7 @@ import { getBinaryGeometryTemplate } from '@loaders.gl/arrow';
 import { BinaryFeatureCollection } from '@loaders.gl/schema';
 import { describe, it, expect } from '@jest/globals';
 
-import {
-  getKernelWeightsFromBinaryGeometries,
-  getKernelWeightsFromGeomCollection,
-} from '../../src/weights/kernel-weights';
+import { getKernelWeightsFromBinaryGeometries } from '../../src/weights/kernel-weights';
 import { getMetaFromWeights } from '../../src/weights/weights-stats';
 import { createWeights } from '../../src/weights/utils';
 
