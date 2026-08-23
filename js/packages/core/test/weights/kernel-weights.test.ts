@@ -111,6 +111,65 @@ describe('Kernel Weights', () => {
     expect(result[3][1]).toBeCloseTo(gaussianAtOne, 12);
   });
 
+  it('should apply each kernel function correctly', async () => {
+    // With a 180 km bandwidth, point 0's only neighbor within range is point 2
+    // (d(0,2) ~= 111.16186 km). This keeps the row deterministic with a single
+    // neighbor, so the kernel weight can be validated independently.
+    const bandwidth = 180;
+    const z = 111.16185827369097 / bandwidth;
+
+    // Reference kernel values at z, from Anselin & Rey (2010) table 5.4.
+    const reference: Record<string, number> = {
+      triangular: 1 - z,
+      uniform: 0.5,
+      epanechnikov: (3 / 4) * (1 - z * z),
+      quartic: (15 / 16) * Math.pow(1 - z * z, 2),
+      gaussian: gaussianConst * Math.exp((-z * z) / 2),
+    };
+
+    for (const [kernel, expectedWeight] of Object.entries(reference)) {
+      const result = await getKernelWeightsFromBinaryGeometries({
+        bandwidth,
+        kernel,
+        binaryGeometryType,
+        binaryGeometries,
+      });
+
+      // point 0: neighbor 2 with weight kernel(z), plus self weight 1.0.
+      expect(result[0][0]).toBe(2);
+      expect(result[0][1]).toBeCloseTo(expectedWeight, 12);
+      expect(result[0][2]).toBe(0);
+      expect(result[0][3]).toBe(1);
+    }
+  });
+
+  it('should return only the diagonal when no neighbors fall within the bandwidth', async () => {
+    // Nearest neighbor distance is ~111.14 km, so a 100 km bandwidth has no neighbors.
+    const bandwidth = 100;
+
+    const result = await getKernelWeightsFromBinaryGeometries({
+      bandwidth,
+      kernel: 'gaussian',
+      binaryGeometryType,
+      binaryGeometries,
+    });
+
+    for (let i = 0; i < 5; i++) {
+      expect(result[i]).toEqual([i, 1]);
+    }
+  });
+
+  it('should reject an unsupported kernel', async () => {
+    await expect(
+      getKernelWeightsFromBinaryGeometries({
+        bandwidth: 200,
+        kernel: 'not-a-kernel',
+        binaryGeometryType,
+        binaryGeometries,
+      })
+    ).rejects.toThrow();
+  });
+
   it('should create kernel weights via createWeights', async () => {
     const { weights, weightsMeta } = await createWeights({
       weightsType: 'kernel',

@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <stdexcept>
 #include <utility>
 
 #include <gmock/gmock.h>
@@ -91,6 +92,111 @@ TEST(WEIGHTS, KERNEL_WEIGHTS) {
 
   // point 2: neighbor 1 only, plus self
   EXPECT_THAT(result[2], ElementsAre(1.0, DoubleNear(1.0 - d12 / bandwidth, 1e-9), 2.0, 1.0));
+}
+
+// Validate each supported kernel function against a known neighbor pair.
+// Point 0 of TEST_POINT_COLLECTION is at (0,0); point 1 is at (1,1). With a
+// bandwidth of 200 km, point 1 is the only neighbor of point 0 (d(0,1) ~=
+// 157.2495585 km), so the row is deterministic: [1, kernel(z), 0, 1.0].
+TEST(WEIGHTS, KERNEL_WEIGHTS_KERNEL_FUNCTIONS) {
+  bool is_mile = false;
+  double bandwidth = 200.0;
+  double d01 = 157.2495585117787;
+  double z01 = d01 / bandwidth;
+
+  struct KernelCase {
+    const char* name;
+    double expected;
+  };
+
+  // Reference values from Anselin & Rey (2010), table 5.4 at z = d01 / bandwidth.
+  KernelCase cases[] = {
+      {"triangular", 1.0 - z01},
+      {"uniform", 0.5},
+      {"epanechnikov", (3.0 / 4.0) * (1.0 - z01 * z01)},
+      {"quartic", (15.0 / 16.0) * std::pow(1.0 - z01 * z01, 2.0)},
+      {"gaussian", (1.0 / std::sqrt(2.0 * geoda::pi)) * std::exp(-z01 * z01 / 2.0)},
+  };
+
+  for (const auto& c : cases) {
+    std::vector<std::vector<double>> result =
+        geoda::kernel_weights(TEST_POINT_COLLECTION, bandwidth, c.name, is_mile);
+    // point 0: only neighbor is 1, with weight kernel(z01); self weight 1.0.
+    EXPECT_THAT(result[0], ElementsAre(1, DoubleNear(c.expected, 1e-9), 0.0, 1.0))
+        << "kernel: " << c.name;
+  }
+}
+
+// Verify that an unsupported kernel is rejected.
+TEST(WEIGHTS, KERNEL_WEIGHTS_INVALID_KERNEL) {
+  bool is_mile = false;
+  EXPECT_THROW(geoda::kernel_weights(TEST_POINT_COLLECTION, 200.0, "not-a-kernel", is_mile),
+               std::invalid_argument);
+  // The kernel name comparison is case-insensitive.
+  std::vector<std::vector<double>> ok =
+      geoda::kernel_weights(TEST_POINT_COLLECTION, 200.0, "GAUSSIAN", is_mile);
+  EXPECT_EQ(ok.size(), 3);
+}
+
+// Verify the distance unit switch: weights must reflect the haversine distance in miles.
+TEST(WEIGHTS, KERNEL_WEIGHTS_MILES) {
+  double bandwidth = 150.0;  // miles; >= d(0,1) but < d(0,2) so point 0 keeps a single neighbor
+  double d01_miles = 97.71034565125832;
+  double d12_miles = 97.69546427048152;
+  double z01 = d01_miles / bandwidth;
+  double z12 = d12_miles / bandwidth;
+
+  std::vector<std::vector<double>> result =
+      geoda::kernel_weights(TEST_POINT_COLLECTION, bandwidth, "triangular", true);
+  ASSERT_EQ(result.size(), 3);
+
+  // point 0: neighbor 1 with triangular(z01); self 1.0.
+  EXPECT_THAT(result[0], ElementsAre(1, DoubleNear(1.0 - z01, 1e-9), 0.0, 1.0));
+  // point 2: neighbor 1 with triangular(z12); self 1.0.
+  EXPECT_THAT(result[2], ElementsAre(1.0, DoubleNear(1.0 - z12, 1e-9), 2.0, 1.0));
+}
+
+// When the bandwidth is smaller than the nearest neighbor distance, every observation
+// has no neighbors and only the diagonal (self) element is present.
+TEST(WEIGHTS, KERNEL_WEIGHTS_NO_NEIGHBORS) {
+  bool is_mile = false;
+  // nearest neighbor distance ~= 157.25 km, so a 100 km bandwidth yields no neighbors.
+  std::vector<std::vector<double>> result =
+      geoda::kernel_weights(TEST_POINT_COLLECTION, 100.0, "gaussian", is_mile);
+  ASSERT_EQ(result.size(), 3);
+  for (size_t i = 0; i < result.size(); ++i) {
+    EXPECT_THAT(result[i], ElementsAre(static_cast<double>(i), 1.0));
+  }
+}
+
+// A bandwidth larger than every pairwise distance connects all observations.
+TEST(WEIGHTS, KERNEL_WEIGHTS_ALL_NEIGHBORS) {
+  bool is_mile = false;
+  double bandwidth = 400.0;  // larger than the max pairwise distance (~314.48 km)
+  std::vector<std::vector<double>> result =
+      geoda::kernel_weights(TEST_POINT_COLLECTION, bandwidth, "uniform", is_mile);
+  ASSERT_EQ(result.size(), 3);
+
+  // uniform kernel: every non-self neighbor gets weight 0.5; self weight 1.0.
+  expect_pairs(result[0], {{1.0, 0.5}, {2.0, 0.5}, {0.0, 1.0}});
+  expect_pairs(result[1], {{0.0, 0.5}, {2.0, 0.5}, {1.0, 1.0}});
+  expect_pairs(result[2], {{0.0, 0.5}, {1.0, 0.5}, {2.0, 1.0}});
+}
+
+// For polygon collections the centroids are used as the point locations.
+TEST(WEIGHTS, KERNEL_WEIGHTS_POLYGON_CENTROIDS) {
+  bool is_mile = false;
+  double bandwidth = 200.0;
+  // TEST_POLYGON_COLLECTION holds two unit squares with centroids (0.5,0.5) and (1.5,1.5).
+  // Their haversine distance is ~157.2405768 km.
+  double centroid_distance = 157.24057682632696;
+
+  std::vector<std::vector<double>> result =
+      geoda::kernel_weights(TEST_POLYGON_COLLECTION, bandwidth, "triangular", is_mile);
+  ASSERT_EQ(result.size(), 2);
+
+  EXPECT_THAT(result[0], ElementsAre(1, DoubleNear(1.0 - centroid_distance / bandwidth, 1e-9), 0.0, 1.0));
+  EXPECT_THAT(result[1], ElementsAre(0.0, DoubleNear(1.0 - centroid_distance / bandwidth, 1e-9), 1.0, 1.0));
 }
 
 TEST(WEIGHTS, KERNEL_WEIGHTS_DIAGONALS) {
