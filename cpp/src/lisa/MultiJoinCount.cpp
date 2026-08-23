@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "../weights/geoda-weight.h"
+#include "../utils/rnd.h"
 #include "./GeoDaSet.h"
 
 MultiJoinCount::MultiJoinCount(int num_obs, GeoDaWeight *w, const std::vector<std::vector<double> > &_data,

@@ -1037,6 +1037,42 @@ export interface GeoDaModule {
   ): LisaResult;
 
   /**
+   * Local Join Count statistics
+   * @param data the binary (0/1) data values
+   * @param neighbors the spatial weights matrix that represents neighbor indices: [[1, 2], [0, 2], [0, 1],...]
+   * @param undefs the undefined values
+   * @param significanceCutoff the significance cutoff
+   * @param permuations the number of permutations
+   * @param lastSeed the last seed
+   */
+  localJoinCount(
+    data: VectorDouble,
+    neighbors: VecVecUInt,
+    undefs: VectorUInt,
+    significanceCutoff: number,
+    permuations: UnsignedInt,
+    lastSeed: number
+  ): LisaResult;
+
+  /**
+   * Multivariate Local Join Count statistics
+   * @param data the multiple binary (0/1) data variables
+   * @param neighbors the spatial weights matrix that represents neighbor indices: [[1, 2], [0, 2], [0, 1],...]
+   * @param undefs the undefined values
+   * @param significanceCutoff the significance cutoff
+   * @param permuations the number of permutations
+   * @param lastSeed the last seed
+   */
+  multivariateLocalJoinCount(
+    data: VecVecDouble,
+    neighbors: VecVecUInt,
+    undefs: VecVecUInt,
+    significanceCutoff: number,
+    permuations: UnsignedInt,
+    lastSeed: number
+  ): LisaResult;
+
+  /**
    * Local Quantile LISA statistics
    * @param k the number of breaks
    * @param quantile which quantile to use
