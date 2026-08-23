@@ -18,6 +18,7 @@ type KernelWeightsFromBinaryGeometriesProps = {
   kernel: string;
   isMile?: boolean;
   useKernelDiagonals?: boolean;
+  power?: number;
   binaryGeometryType: BinaryGeometryType;
   binaryGeometries: BinaryFeatureCollection[];
 };
@@ -34,6 +35,7 @@ export async function getKernelWeightsFromBinaryGeometries({
   kernel,
   isMile = false,
   useKernelDiagonals = false,
+  power = 1.0,
   binaryGeometryType,
   binaryGeometries,
 }: KernelWeightsFromBinaryGeometriesProps): Promise<number[][]> {
@@ -54,6 +56,7 @@ export async function getKernelWeightsFromBinaryGeometries({
     kernel,
     isMile,
     useKernelDiagonals,
+    power,
   });
 
   return weights;
@@ -65,12 +68,14 @@ export async function getKernelWeightsFromGeomCollection({
   kernel,
   isMile = false,
   useKernelDiagonals = false,
+  power = 1.0,
 }: {
   geomCollection: GeometryCollection;
   bandwidth: number;
   kernel: string;
   isMile?: boolean;
   useKernelDiagonals?: boolean;
+  power?: number;
 }): Promise<number[][]> {
   const wasmInstance = await initWASM();
   const weights: number[][] = [];
@@ -80,7 +85,8 @@ export async function getKernelWeightsFromGeomCollection({
       bandwidth,
       kernel,
       isMile,
-      useKernelDiagonals
+      useKernelDiagonals,
+      power
     );
     for (let i = 0; i < result.size(); ++i) {
       const row = result.get(i);

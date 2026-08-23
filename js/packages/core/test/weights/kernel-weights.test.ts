@@ -156,6 +156,29 @@ describe('Kernel Weights', () => {
     }
   });
 
+  it('should apply the power argument to the distance ratio', async () => {
+    // d(0,2) ~= 111.16186 km. With bandwidth 180 and power 2, the kernel ratio is
+    // z = d^power / bandwidth.
+    const bandwidth = 180;
+    const d = 111.16185827369097;
+    const power = 2.0;
+    const z = Math.pow(d, power) / bandwidth;
+
+    const result = await getKernelWeightsFromBinaryGeometries({
+      bandwidth,
+      kernel: 'triangular',
+      power,
+      binaryGeometryType,
+      binaryGeometries,
+    });
+
+    // point 0: only neighbor 2 within 180 km, weight = triangular(z), plus self.
+    expect(result[0][0]).toBe(2);
+    expect(result[0][1]).toBeCloseTo(1 - z, 12);
+    expect(result[0][2]).toBe(0);
+    expect(result[0][3]).toBe(1);
+  });
+
   it('should create kernel weights via createWeights', async () => {
     const { weights, weightsMeta } = await createWeights({
       weightsType: 'kernel',

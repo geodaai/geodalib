@@ -62,7 +62,7 @@ double kernel_value(const std::string& kernel, double z) {
 
 std::vector<std::vector<double>> geoda::kernel_weights(const GeometryCollection& geoms, double bandwidth,
                                                        const std::string& kernel, bool is_mile,
-                                                       bool use_kernel_diagonals) {
+                                                       bool use_kernel_diagonals, double power) {
   // create rtree
   std::vector<point_val> pts;
   size_t num_geoms = geoms.size();
@@ -104,7 +104,12 @@ std::vector<std::vector<double>> geoda::kernel_weights(const GeometryCollection&
       double y1 = nbr.first.get<1>();
       double d = haversine_distance(x, y, x1, y1, is_mile);
       if (d <= bandwidth) {
-        double z = d / bandwidth;
+        // The kernel ratio is z = distance^power / bandwidth (power defaults to 1.0).
+        double w_val = d;
+        if (power != 1.0) {
+          w_val = std::pow(d, power);
+        }
+        double z = w_val / bandwidth;
         result[orig_idx].push_back(nbr.second);
         result[orig_idx].push_back(kernel_value(k, z));
       }

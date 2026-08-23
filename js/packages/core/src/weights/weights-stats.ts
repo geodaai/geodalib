@@ -66,6 +66,10 @@ export type WeightsMeta = {
    */
   kernel?: string;
   /**
+   * The power (or exponent) applied to the distance before normalizing by the bandwidth
+   */
+  power?: number;
+  /**
    * Whether the distance is in miles
    */
   isMile?: boolean;

@@ -199,6 +199,29 @@ TEST(WEIGHTS, KERNEL_WEIGHTS_POLYGON_CENTROIDS) {
   EXPECT_THAT(result[1], ElementsAre(0.0, DoubleNear(1.0 - centroid_distance / bandwidth, 1e-9), 1.0, 1.0));
 }
 
+// Verify the power argument: the kernel ratio is z = distance^power / bandwidth.
+TEST(WEIGHTS, KERNEL_WEIGHTS_POWER) {
+  bool is_mile = false;
+  double bandwidth = 200.0;
+  double d01 = 157.2495585117787;
+  double power = 2.0;
+
+  std::vector<std::vector<double>> result =
+      geoda::kernel_weights(TEST_POINT_COLLECTION, bandwidth, "triangular", is_mile, false, power);
+  ASSERT_EQ(result.size(), 3);
+
+  double z = std::pow(d01, power) / bandwidth;
+  // point 0: neighbor 1 with triangular(d01^power / bandwidth); self 1.0.
+  EXPECT_THAT(result[0], ElementsAre(1, DoubleNear(1.0 - z, 1e-9), 0.0, 1.0));
+
+  // power == 1.0 must match the default behavior.
+  std::vector<std::vector<double>> default_result =
+      geoda::kernel_weights(TEST_POINT_COLLECTION, bandwidth, "triangular", is_mile);
+  std::vector<std::vector<double>> power_one_result =
+      geoda::kernel_weights(TEST_POINT_COLLECTION, bandwidth, "triangular", is_mile, false, 1.0);
+  EXPECT_EQ(default_result, power_one_result);
+}
+
 TEST(WEIGHTS, KERNEL_WEIGHTS_DIAGONALS) {
   bool is_mile = false;
   double bandwidth = 200.0;

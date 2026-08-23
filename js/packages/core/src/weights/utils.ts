@@ -29,6 +29,10 @@ export type CreateWeightsProps = {
    */
   useKernelDiagonals?: boolean;
   /**
+   * The power (or exponent) applied to the distance before normalizing by the bandwidth
+   */
+  power?: number;
+  /**
    * Whether to use centroids for neighbor calculations
    */
   useCentroids?: boolean;
@@ -85,6 +89,7 @@ export async function createWeights({
   bandwidth,
   kernel,
   useKernelDiagonals,
+  power,
   useCentroids,
   precisionThreshold,
   orderOfContiguity,
@@ -156,6 +161,7 @@ export async function createWeights({
       kernel: kernel || 'gaussian',
       isMile: isMile || false,
       useKernelDiagonals: useKernelDiagonals !== undefined ? useKernelDiagonals : false,
+      power: power !== undefined ? power : 1.0,
     });
 
     weightsMeta = {
@@ -164,6 +170,7 @@ export async function createWeights({
       symmetry: 'asymmetric',
       bandwidth: bandwidth || 0.0,
       kernel: kernel || 'gaussian',
+      power: power !== undefined ? power : 1.0,
       isMile: isMile || false,
     };
   } else {
