@@ -965,6 +965,60 @@ export interface GeoDaModule {
   ): VecVecInt;
 
   /**
+   * AZP with simulated annealing
+   */
+  azpSA(
+    p: UnsignedInt,
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    inits: UnsignedInt,
+    coolingRate: Double,
+    saMaxit: UnsignedInt,
+    distanceMethod: string,
+    rndSeed: number
+  ): VecVecInt;
+
+  /**
+   * AZP with tabu search
+   */
+  azpTabu(
+    p: UnsignedInt,
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    inits: UnsignedInt,
+    tabuLength: UnsignedInt,
+    convTabu: UnsignedInt,
+    distanceMethod: string,
+    rndSeed: number
+  ): VecVecInt;
+
+  /**
+   * Max-P with simulated annealing
+   */
+  maxpSA(
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    iterations: UnsignedInt,
+    coolingRate: Double,
+    saMaxit: UnsignedInt,
+    distanceMethod: string,
+    rndSeed: number
+  ): VecVecInt;
+
+  /**
+   * Max-P with tabu search
+   */
+  maxpTabu(
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    iterations: UnsignedInt,
+    tabuLength: UnsignedInt,
+    convTabu: UnsignedInt,
+    distanceMethod: string,
+    rndSeed: number
+  ): VecVecInt;
+
+  /**
    * get the nearest neighbors of a collection of geometries
    * @param geometries the collection of geometries
    * @param threshold the distance threshold

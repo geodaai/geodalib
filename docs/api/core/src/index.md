@@ -45,6 +45,8 @@
 ## Functions
 
 - [azpGreedy](functions/azpGreedy.md)
+- [azpSA](functions/azpSA.md)
+- [azpTabu](functions/azpTabu.md)
 - [calculateRates](functions/calculateRates.md)
 - [CheckGeometryType](functions/CheckGeometryType.md)
 - [createLineCollectionFromBinaryFeatures](functions/createLineCollectionFromBinaryFeatures.md)
@@ -90,6 +92,8 @@
 - [isPointLayerData](functions/isPointLayerData.md)
 - [lineToFeature](functions/lineToFeature.md)
 - [maxpGreedy](functions/maxpGreedy.md)
+- [maxpSA](functions/maxpSA.md)
+- [maxpTabu](functions/maxpTabu.md)
 - [naturalBreaks](functions/naturalBreaks.md)
 - [percentileBreaks](functions/percentileBreaks.md)
 - [polygonToFeature](functions/polygonToFeature.md)
