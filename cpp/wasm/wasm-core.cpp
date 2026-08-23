@@ -22,6 +22,7 @@
 #include "sa/lisa-api.h"
 #include "data/data.h"
 #include "weights/weights.h"
+#include "clustering/clustering-api.h"
 
 template <typename T>
 emscripten::class_<std::vector<T>> register_vector_with_smart_ptrs(const char* name) {
@@ -103,6 +104,7 @@ EMSCRIPTEN_BINDINGS(wasmgeoda) {
   emscripten::function("cartogram", &geoda::cartogram);
 
   emscripten::function("getNearestNeighbors", &geoda::knearest_neighbors);
+  emscripten::function("schc", &geoda::schc);
   emscripten::function("getDistanceWeights", &geoda::distance_weights);
   emscripten::function("getDistanceThresholds", &geoda::get_distance_thresholds);
   emscripten::function("getPolygonContiguityWeights", &geoda::polygon_contiguity_weights);

@@ -878,6 +878,28 @@ export interface GeoDaModule {
   getNearestNeighbors(geometries: GeometryCollection, k: UnsignedInt): VecVecUInt;
 
   /**
+   * Spatially constrained hierarchical clustering (SCHC)
+   * @param k the number of clusters
+   * @param neighbors spatial weights matrix as adjacency list
+   * @param data multivariate data (one array per variable)
+   * @param scaleMethod raw | standardize
+   * @param linkageMethod single | complete | average | ward
+   * @param distanceMethod euclidean | manhattan
+   * @param boundVals optional bound values per observation
+   * @param minBound minimum bound
+   */
+  schc(
+    k: UnsignedInt,
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    scaleMethod: string,
+    linkageMethod: string,
+    distanceMethod: string,
+    boundVals: VectorDouble,
+    minBound: Double
+  ): VecVecInt;
+
+  /**
    * get the nearest neighbors of a collection of geometries
    * @param geometries the collection of geometries
    * @param threshold the distance threshold

@@ -3,6 +3,7 @@ set(TEST_SOURCE_FILES
     ${CLAPACK_SRC}
     test-regression.cpp
     test-weights.cpp
+    test-clustering.cpp
     test_thiessen_polygon.cpp
     test_cartogram.cpp)
 

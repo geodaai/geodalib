@@ -99,6 +99,7 @@
 - [rawRates](functions/rawRates.md)
 - [resetWASM](functions/resetWASM.md)
 - [rookWeights](functions/rookWeights.md)
+- [schc](functions/schc.md)
 - [setDeliveryWASM](functions/setDeliveryWASM.md)
 - [spatialDissolve](functions/spatialDissolve.md)
 - [spatialEmpiricalBayes](functions/spatialEmpiricalBayes.md)

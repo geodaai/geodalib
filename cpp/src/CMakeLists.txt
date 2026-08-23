@@ -28,6 +28,10 @@ set (CORE_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/data/range_adjust.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/data/range_standardize.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/data/standardize.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/clustering/cluster-utils.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/clustering/redcap.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/clustering/schc_wrapper.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/clustering/clustering-api.cpp
     ${WEIGHTS_SOURCE_FILES}
 )
 set (CORE_SOURCE_FILES ${CORE_SOURCE_FILES} PARENT_SCOPE)

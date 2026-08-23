@@ -24,6 +24,7 @@ export * from './geometry/thiessen-polygon';
 export * from './geometry/mst';
 export * from './geometry/cartogram';
 export * from './geometry/utils';
+export * from './clustering/schc';
 
 export * from './mapping/quantile';
 export * from './mapping/natural-breaks';
