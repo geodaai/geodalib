@@ -95,7 +95,8 @@ std::vector<std::vector<int>> geoda::azp_greedy(int p, const std::vector<std::ve
   GeoDaWeight* w = new VectorWeight(neighbors);
   std::vector<std::pair<double, std::vector<double>>> min_bounds, max_bounds;
   std::vector<int> init_regions;
-  azp_greedy_wrapper azp(p, w, data, inits, min_bounds, max_bounds, init_regions, distance_method, rnd_seed, 0);
+  std::vector<std::vector<double>> scaled = scale_data(data, "standardize");
+  azp_greedy_wrapper azp(p, w, scaled, inits, min_bounds, max_bounds, init_regions, distance_method, rnd_seed, 0);
   std::vector<std::vector<int>> result = azp.GetClusters();
   delete w;
   return result;

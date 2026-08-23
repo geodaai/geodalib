@@ -164,9 +164,10 @@ double euclidean_distance(double* a, const std::vector<double>& b) {
   return std::sqrt(sum);
 }
 void shuffle(std::vector<int>& items, Xoroshiro128Random& rng) {
-  for (size_t i = items.size() - 1; i > 0; --i) {
-    size_t j = static_cast<size_t>(rng.nextInt(static_cast<int>(i + 1)));
-    std::swap(items[i], items[j]);
+  for (int i = static_cast<int>(items.size()) - 1; i >= 1; --i) {
+    int k = rng.nextInt(i + 1);
+    while (k >= i) k = rng.nextInt(i + 1);
+    if (k != i) std::swap(items[i], items[k]);
   }
 }
 

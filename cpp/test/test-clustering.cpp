@@ -49,3 +49,19 @@ TEST(CLUSTERING, SPATIAL_VALIDATION) {
   ValidationResult result = geoda::spatial_validation(clusters, TEST_NEIGHBORS, pts);
   EXPECT_EQ(result.spatially_constrained, true);
 }
+
+TEST(CLUSTERING, AZP_GREEDY) {
+  std::vector<std::vector<double>> data = {{1.0, 2.0, 3.0, 4.0, 5.0}};
+  std::vector<std::vector<int>> result = geoda::azp_greedy(2, TEST_NEIGHBORS, data, 10, "euclidean", 1234567);
+  int count = 0;
+  for (const auto& c : result) count += static_cast<int>(c.size());
+  EXPECT_EQ(count, 5);
+}
+
+TEST(CLUSTERING, MAXP_GREEDY) {
+  std::vector<std::vector<double>> data = {{1.0, 2.0, 3.0, 4.0, 5.0}};
+  std::vector<std::vector<int>> result = geoda::maxp_greedy(TEST_NEIGHBORS, data, 10, "euclidean", 1234567);
+  int count = 0;
+  for (const auto& c : result) count += static_cast<int>(c.size());
+  EXPECT_EQ(count, 5);
+}

@@ -847,7 +847,11 @@ void AZP::LocalImproving()
     //std::vector<int> rand_test = {7,4,3,5,3,3,1,1,0,3,3,2,3,4,2,0,0,0};
     //std::vector<int> rand_test1 = {57, 56, 52, 24, 16, 10, 3, 24, 51, 57, 22, 57, 46, 11, 46, 52, 50, 46, 10, 52, 24, 57, 3, 51, 7, 5, 20, 30, 28, 8, 26, 39, 43, 18, 55, 41, 36, 29, 17, 0, 56, 33, 35, 1, 23, 9, 32, 22, 2, 49, 15, 11, 48, 14, 16, 50, 34, 12, 42, 40, 31, 45, 44, 31, 30, 28, 8, 20, 40, 42, 17, 41, 18, 26, 55, 43, 39, 29, 36, 44, 31, 14, 11, 16, 2, 48, 0, 1, 15, 35, 50, 12, 23, 9, 49, 33, 32, 34, 56, 22, 24, 7, 45, 57, 10, 51, 5, 3, 46, 52};
     //int rr = 0, rr1 = 0;
+    int improve_guard = 0;
     while (improve == 1) {
+        if (++improve_guard > n * 100) {
+            break;  // safety: prevent oscillation on degenerate inputs
+        }
         std::vector<int> regions;
         for (int i=0; i<p; ++i) {
             regions.push_back(i);
@@ -1458,7 +1462,9 @@ void AZPSA::LocalImproving()
     std::set<int>::iterator it;
 
     int improve = 1;
+    int improve_guard = 0;
     while (improve == 1) {
+        if (++improve_guard > n * 100) break;
         std::vector<int> regions(p);
         for (int i=0; i<p; ++i) regions[i] = i;
 

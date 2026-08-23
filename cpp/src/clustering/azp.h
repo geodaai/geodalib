@@ -751,10 +751,12 @@ public:
         initial_objectivefunction = this->objInfo;
         double best_score = this->objInfo;
         bool improvement = true;
+        int dbg_it = 0;
         while (improvement) {
             this->LocalImproving();
             improvement = this->objInfo < best_score;
             best_score = this->objInfo;
+            if (++dbg_it > 100000) break;  // safety: prevent oscillation
         }
 
         final_solution = this->returnRegions();
