@@ -19,5 +19,4 @@ outline: deep
 
 ## Kernel Weights
 
-- Kernel Weights
-- Kernel K-Nearest Neighbors Weights
+- [Kernel Weights](/api/core/src/functions/getKernelWeightsFromBinaryGeometries)
