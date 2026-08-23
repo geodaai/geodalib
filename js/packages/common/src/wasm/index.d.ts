@@ -900,6 +900,48 @@ export interface GeoDaModule {
   ): VecVecInt;
 
   /**
+   * Regionally constrained clustering (REDCAP)
+   * @param k the number of clusters
+   * @param neighbors spatial weights matrix as adjacency list
+   * @param data multivariate data
+   * @param scaleMethod raw | standardize
+   * @param redcapMethod firstorder-singlelinkage | fullorder-completelinkage | fullorder-averagelinkage | fullorder-singlelinkage | fullorder-wardlinkage
+   * @param distanceMethod euclidean | manhattan
+   * @param boundVals optional bound values per observation
+   * @param minBound minimum bound
+   */
+  redcap(
+    k: UnsignedInt,
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    scaleMethod: string,
+    redcapMethod: string,
+    distanceMethod: string,
+    boundVals: VectorDouble,
+    minBound: Double
+  ): VecVecInt;
+
+  /**
+   * Spatially constrained clustering (SKATER)
+   * @param k the number of clusters
+   * @param neighbors spatial weights matrix as adjacency list
+   * @param data multivariate data
+   * @param scaleMethod raw | standardize
+   * @param distanceMethod euclidean | manhattan
+   * @param boundVals optional bound values per observation
+   * @param minBound minimum bound
+   */
+  skater(
+    k: UnsignedInt,
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    scaleMethod: string,
+    distanceMethod: string,
+    boundVals: VectorDouble,
+    minBound: Double
+  ): VecVecInt;
+
+  /**
    * get the nearest neighbors of a collection of geometries
    * @param geometries the collection of geometries
    * @param threshold the distance threshold

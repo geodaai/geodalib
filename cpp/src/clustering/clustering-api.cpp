@@ -6,6 +6,7 @@
 
 #include "clustering-api.h"
 #include "schc_wrapper.h"
+#include "redcap_wrapper.h"
 #include "../data/data.h"
 #include "../weights/vector-weight.h"
 
@@ -47,4 +48,37 @@ std::vector<std::vector<int>> geoda::schc(unsigned int k, const std::vector<std:
   std::vector<std::vector<int>> result = wrapper.GetClusters();
   delete w;
   return result;
+}
+
+std::vector<std::vector<int>> geoda::redcap(unsigned int k, const std::vector<std::vector<unsigned int>>& neighbors,
+                                            const std::vector<std::vector<double>>& data,
+                                            const std::string& scale_method, const std::string& redcap_method,
+                                            const std::string& distance_method, const std::vector<double>& bound_vals,
+                                            double min_bound) {
+  GeoDaWeight* w = new VectorWeight(neighbors);
+  unsigned int method = 0;
+  if (redcap_method == "fullorder-completelinkage") {
+    method = 1;
+  } else if (redcap_method == "fullorder-averagelinkage") {
+    method = 2;
+  } else if (redcap_method == "fullorder-singlelinkage") {
+    method = 3;
+  } else if (redcap_method == "fullorder-wardlinkage") {
+    method = 4;
+  }
+
+  std::vector<std::vector<double>> scaled = scale_data(data, scale_method);
+
+  redcap_wrapper rc(k, w, scaled, method, distance_method, bound_vals, min_bound, 1234567, 1, 0);
+  std::vector<std::vector<int>> result = rc.GetClusters();
+  delete w;
+  return result;
+}
+
+std::vector<std::vector<int>> geoda::skater(unsigned int k, const std::vector<std::vector<unsigned int>>& neighbors,
+                                            const std::vector<std::vector<double>>& data,
+                                            const std::string& scale_method, const std::string& distance_method,
+                                            const std::vector<double>& bound_vals, double min_bound) {
+  return geoda::redcap(k, neighbors, data, scale_method, "firstorder-singlelinkage", distance_method, bound_vals,
+                       min_bound);
 }

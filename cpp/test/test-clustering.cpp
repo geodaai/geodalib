@@ -19,3 +19,23 @@ TEST(CLUSTERING, SCHC) {
   for (const auto& c : result) count += static_cast<int>(c.size());
   EXPECT_EQ(count, 5);
 }
+
+TEST(CLUSTERING, REDCAP) {
+  std::vector<std::vector<double>> data = {{1.0, 2.0, 3.0, 4.0, 5.0}};
+  std::vector<double> bound_vals;
+  std::vector<std::vector<int>> result =
+      geoda::redcap(2, TEST_NEIGHBORS, data, "raw", "firstorder-singlelinkage", "euclidean", bound_vals, 0.0);
+  int count = 0;
+  for (const auto& c : result) count += static_cast<int>(c.size());
+  EXPECT_EQ(count, 5);
+}
+
+TEST(CLUSTERING, SKATER) {
+  std::vector<std::vector<double>> data = {{1.0, 2.0, 3.0, 4.0, 5.0}};
+  std::vector<double> bound_vals;
+  std::vector<std::vector<int>> result =
+      geoda::skater(2, TEST_NEIGHBORS, data, "raw", "euclidean", bound_vals, 0.0);
+  int count = 0;
+  for (const auto& c : result) count += static_cast<int>(c.size());
+  EXPECT_EQ(count, 5);
+}
