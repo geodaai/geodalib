@@ -39,6 +39,7 @@ set (LISA_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/sa/local-g.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sa/local-geary.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/sa/quantile-lisa.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/sa/extra-lisa.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/lisa/LISA.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/lisa/UniLocalMoran.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/lisa/BiLocalMoran.cpp
