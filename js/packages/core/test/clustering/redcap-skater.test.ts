@@ -18,4 +18,13 @@ describe('clustering', () => {
     const result = await skater({ k: 2, data: [[1, 2, 3, 4, 5]], neighbors });
     expect(result.reduce((s, c) => s + c.length, 0)).toBe(5);
   });
+
+  it('should reject a variable whose length does not match the observations', async () => {
+    await expect(
+      redcap({ k: 2, data: [[1, 2, 3, 4]], neighbors })
+    ).rejects.toThrow('must have 5 values');
+    await expect(
+      skater({ k: 2, data: [[1, 2, 3, 4]], neighbors })
+    ).rejects.toThrow('must have 5 values');
+  });
 });

@@ -37,6 +37,24 @@ export async function skater({
   const wasm = await initWASM();
   const n = neighbors.length;
 
+  // Validate before copying into WASM: a shorter variable would leave
+  // Number(undefined) = NaN in the data matrix and skew the clustering, and a
+  // boundVals of the wrong length would be silently truncated.
+  if (n === 0) {
+    throw new Error('skater: neighbors must contain at least one observation');
+  }
+  if (data.length === 0) {
+    throw new Error('skater: data must contain at least one variable');
+  }
+  for (const varData of data) {
+    if (varData.length !== n) {
+      throw new Error(`skater: each variable must have ${n} values (got ${varData.length})`);
+    }
+  }
+  if (boundVals.length !== 0 && boundVals.length !== n) {
+    throw new Error(`skater: boundVals must be empty or have ${n} values (got ${boundVals.length})`);
+  }
+
   const wasmData = new wasm.VecVecDouble();
   for (const varData of data) {
     const wv = new wasm.VectorDouble();
