@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright contributors to the geodalib project
 
+#include <stdexcept>
+
 #include <gtest/gtest.h>
 
 #include "clustering/clustering-api.h"
@@ -19,6 +21,12 @@ TEST(CLUSTERING, SCHC) {
   int count = 0;
   for (const auto& c : result) count += static_cast<int>(c.size());
   EXPECT_EQ(count, 5);
+
+  // Variables of unequal length must be rejected instead of silently scaling
+  // an inconsistent data matrix.
+  std::vector<std::vector<double>> mismatched = {{1.0, 2.0, 3.0, 4.0, 5.0}, {1.0, 2.0, 3.0}};
+  EXPECT_THROW(geoda::schc(2, TEST_NEIGHBORS, mismatched, "standardize", "ward", "euclidean", bound_vals, 0.0),
+               std::invalid_argument);
 }
 
 TEST(CLUSTERING, REDCAP) {
@@ -48,6 +56,11 @@ TEST(CLUSTERING, SPATIAL_VALIDATION) {
   std::vector<int> clusters = {1, 1, 1, 2, 2};
   ValidationResult result = geoda::spatial_validation(clusters, TEST_NEIGHBORS, pts);
   EXPECT_EQ(result.spatially_constrained, true);
+
+  // A cluster label list shorter than the neighbor list would index out of
+  // bounds; it must be rejected up front.
+  std::vector<int> short_clusters = {1, 1, 1};
+  EXPECT_THROW(geoda::spatial_validation(short_clusters, TEST_NEIGHBORS, pts), std::invalid_argument);
 }
 
 TEST(CLUSTERING, AZP_GREEDY) {

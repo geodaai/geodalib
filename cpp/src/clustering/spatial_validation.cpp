@@ -17,6 +17,12 @@
 
 namespace bg = boost::geometry;
 
+namespace {
+// M_PI is a non-standard extension that is not guaranteed to be defined by
+// libc++ (notably in WASM builds), so use a local constant instead.
+constexpr double kPi = 3.14159265358979323846;
+}  // namespace
+
 #ifndef __NO_THREAD__
     #ifndef __USE_PTHREAD__
         #include <boost/system/config.hpp>
@@ -58,7 +64,12 @@ SpatialValidationComponent::SpatialValidationComponent(int cid, const std::vecto
         boost::unordered_map<long ,bool> nbr_dict;
         for (int i = 0; i < (int)nbrs.size(); ++i) {
             if (elements[0] != (int)nbrs[i]) {
-                nbr_dict[cluster_dict[(int)nbrs[i]]] = true;
+                // find instead of operator[] so a neighbor id missing from
+                // cluster_dict is skipped, not silently mapped to cluster 0.
+                std::map<int, int>::const_iterator it = cluster_dict.find((int)nbrs[i]);
+                if (it != cluster_dict.end()) {
+                    nbr_dict[it->second] = true;
+                }
             }
         }
         isSurroundedSingleton = nbr_dict.size() == 1;
@@ -210,7 +221,10 @@ void SpatialValidationComponent::ComputeDiameterThread(int start, int end)
 
 bool SpatialValidationComponent::Has(int eid)
 {
-    return elements_dict[eid];
+    // find instead of operator[] so a read-only membership check never inserts
+    // a default entry into elements_dict for an unknown element.
+    std::map<int, bool>::const_iterator it = elements_dict.find(eid);
+    return it != elements_dict.end() && it->second;
 }
 
 
@@ -251,7 +265,10 @@ core(0), geoms(geoms), shape_type(shape_type)
             std::vector<unsigned int> nbrs = weights->GetNeighbors(tmp_id);
             for (int j = 0; j < (int)nbrs.size(); ++j) {
                 int neighbor = (int)nbrs[j];
-                if (cluster_dict[neighbor] == this->cid) {
+                // find instead of operator[]: a neighbor missing from
+                // cluster_dict cannot belong to this cluster.
+                std::map<int, int>::const_iterator it = cluster_dict.find(neighbor);
+                if (it != cluster_dict.end() && it->second == this->cid) {
                     if (visited.find(neighbor) == visited.end()) {
                         stack.push(neighbor);
                         visited[neighbor] = true;
@@ -445,7 +462,7 @@ Compactness SpatialValidationCluster::ComputeCompactness()
     }
     
     if (perimeter > 0) {
-        ipc = 4 * M_PI * area / (perimeter * perimeter);
+        ipc = 4 * kPi * area / (perimeter * perimeter);
     }
     
     comp.isoperimeter_quotient = ipc;

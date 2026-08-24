@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright contributors to the geodalib project
 
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -20,11 +21,24 @@ namespace {
 
 std::vector<std::vector<double>> scale_data(const std::vector<std::vector<double>>& data,
                                             const std::string& scale_method) {
-  std::vector<std::vector<double>> scaled = data;
-  if (scale_method == "raw") {
-    return scaled;
+  if (data.empty()) {
+    return {};
   }
-  std::vector<unsigned int> undef(scaled[0].size(), 0);
+  if (scale_method == "raw") {
+    return data;
+  }
+  // All variables must hold one value per observation; standardize_data_wasm
+  // bails out silently on a length mismatch, so reject it explicitly instead
+  // of producing inconsistently-scaled variables.
+  const size_t num_obs = data[0].size();
+  for (size_t i = 0; i < data.size(); ++i) {
+    if (data[i].size() != num_obs) {
+      throw std::invalid_argument(
+          "scale_data: each variable must have the same number of observations");
+    }
+  }
+  std::vector<std::vector<double>> scaled = data;
+  std::vector<unsigned int> undef(num_obs, 0);
   for (size_t i = 0; i < scaled.size(); ++i) {
     scaled[i] = geoda::standardize_data_wasm(scaled[i], undef);
   }
@@ -174,6 +188,10 @@ ValidationResult geoda::spatial_validation(const std::vector<int>& clusters,
                                            const std::vector<std::vector<unsigned int>>& neighbors,
                                            const GeometryCollection& geoms) {
   ValidationResult result;
+  if (clusters.size() != neighbors.size()) {
+    throw std::invalid_argument(
+        "spatial_validation: clusters and neighbors must have the same number of observations");
+  }
   int num_obs = static_cast<int>(neighbors.size());
 
   // Build point geometry contents from centroids (POINT shape type).
