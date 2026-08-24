@@ -28,8 +28,6 @@ outline: deep
 ### Cartogram
 
 - [Cartogram](/api/core/src/functions/getCartogram)
-- [Thiessen Polygons](/api/core/src/functions/getThiessenPolygons)
-- [Minimum Spanning Tree](/api/core/src/functions/getMinimumSpanningTree)
 
 
 
@@ -131,6 +129,9 @@ outline: deep
 
 ### Geometric Operations
 
+- [Area](/api/core/src/functions/getArea)
+- [Length](/api/core/src/functions/getLength)
+- [Perimeter](/api/core/src/functions/getPerimeter)
 - [Centroid](/api/core/src/functions/getCentroids)
 - [Buffer](/api/core/src/functions/getBuffers)
 - [Spatial Dissolve](/api/core/src/functions/spatialDissolve)
