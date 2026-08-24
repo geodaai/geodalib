@@ -518,6 +518,45 @@ export class LisaResult {
 }
 
 /**
+ * Result of a batch LISA computation (per-variable arrays).
+ */
+export class BatchLisaResult {
+  /**
+   * Check if the result is valid
+   */
+  isValid(): boolean;
+  /**
+   * Get the LISA statistic values for each variable
+   */
+  getLisaValues(): VecVecDouble;
+  /**
+   * Get the p-values for each variable
+   */
+  getPValues(): VecVecDouble;
+  /**
+   * Get the cluster assignments for each variable
+   */
+  getClusters(): VecVecInt;
+  /**
+   * Get the spatial lag values for each variable
+   */
+  getLagValues(): VecVecDouble;
+  /**
+   * Get the number of neighbors for each observation
+   */
+  getNN(): VectorInt;
+  /**
+   * Get the labels for the clusters
+   */
+  getLabels(): VectorString;
+  /**
+   * Get the colors associated with each cluster
+   */
+  getColors(): VectorString;
+  delete(): void;
+}
+
+/**
  * Class for the diagnostic report of regression analysis
  */
 export class DiagnosticReport {
@@ -1002,6 +1041,10 @@ export interface GeoDaModule {
   ): LisaResult;
 
   /**
+   * Batch Local Moran statistics (multiple variables)
+   * @param data the multiple data variables
+   * @param neighbors the spatial weights matrix
+   * @param undefs the undefined values per variable
    * Empirical Bayes smoothed Local Moran statistics
    * @param eventData the event (numerator) data values
    * @param baseData the base (denominator) data values
@@ -1011,6 +1054,14 @@ export interface GeoDaModule {
    * @param permuations the number of permutations
    * @param lastSeed the last seed
    */
+  batchLocalMoran(
+    data: VecVecDouble,
+    neighbors: VecVecUInt,
+    undefs: VecVecUInt,
+    significanceCutoff: number,
+    permuations: UnsignedInt,
+    lastSeed: number
+  ): BatchLisaResult;
   localMoranEB(
     eventData: VectorDouble,
     baseData: VectorDouble,

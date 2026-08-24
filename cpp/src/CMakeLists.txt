@@ -48,6 +48,8 @@ set (LISA_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/lisa/UniG.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/lisa/UniJoinCount.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/lisa/MultiJoinCount.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/lisa/BatchLISA.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/lisa/BatchLocalMoran.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/lisa/UniGstar.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/lisa/UniGeary.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/lisa/MultiGeary.cpp
