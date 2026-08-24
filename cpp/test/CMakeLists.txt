@@ -4,6 +4,7 @@ set(TEST_SOURCE_FILES
     test-regression.cpp
     test-weights.cpp
     test-clustering.cpp
+    test-lisa.cpp
     test_thiessen_polygon.cpp
     test_cartogram.cpp)
 

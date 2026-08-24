@@ -113,7 +113,11 @@ EMSCRIPTEN_BINDINGS(wasmgeoda) {
   emscripten::function("maxpGreedy", &geoda::maxp_greedy);
   emscripten::function("maxpSA", &geoda::maxp_sa);
   emscripten::function("maxpTabu", &geoda::maxp_tabu);
+  emscripten::function("makeSpatial", &geoda::make_spatial);
+  emscripten::function("neighborMatchTest", &geoda::neighbor_match_test);
+  emscripten::function("getKernelKnnWeights", &geoda::kernel_knn_weights);
   emscripten::function("getDistanceWeights", &geoda::distance_weights);
+  emscripten::function("getKernelWeights", &geoda::kernel_weights);
   emscripten::function("getDistanceThresholds", &geoda::get_distance_thresholds);
   emscripten::function("getPolygonContiguityWeights", &geoda::polygon_contiguity_weights);
   emscripten::function("getPointContiguityWeights", &geoda::point_contiguity_weights);

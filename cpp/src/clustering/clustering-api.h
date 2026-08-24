@@ -49,6 +49,8 @@ std::vector<std::vector<int>> maxp_tabu(const std::vector<std::vector<unsigned i
 ValidationResult spatial_validation(const std::vector<int>& clusters,
                                     const std::vector<std::vector<unsigned int>>& neighbors,
                                     const GeometryCollection& geoms);
+std::vector<std::vector<int>> make_spatial(const std::vector<std::vector<int>>& clusters,
+                                           const std::vector<std::vector<unsigned int>>& neighbors);
 
 }  // namespace geoda
 

@@ -5,16 +5,33 @@ import { SpatialGeometry, getGeometryCollection } from '../geometry/utils';
 import { getContiguityNeighborsFromGeomCollection } from './contiguity-neighbors';
 import { getDistanceNeighborsFromGeomCollection } from './distance-neighbors';
 import { getNearestNeighborsFromGeomCollection } from './nearest-neighbors';
+import { getKernelWeightsFromGeomCollection } from './kernel-weights';
 import { getMetaFromWeights } from './weights-stats';
 import { WeightsMeta } from './weights-stats';
 
 export type CreateWeightsProps = {
-  weightsType: 'knn' | 'threshold' | 'queen' | 'rook';
+  weightsType: 'knn' | 'threshold' | 'queen' | 'rook' | 'kernel';
   k?: number;
   distanceThreshold?: number;
   isQueen?: boolean;
   isRook?: boolean;
   isMile?: boolean;
+  /**
+   * The bandwidth for kernel weights
+   */
+  bandwidth?: number;
+  /**
+   * The kernel function for kernel weights
+   */
+  kernel?: string;
+  /**
+   * Whether the diagonal (self) weight is kernel(1.0) instead of 1.0
+   */
+  useKernelDiagonals?: boolean;
+  /**
+   * The power (or exponent) applied to the distance before normalizing by the bandwidth
+   */
+  power?: number;
   /**
    * Whether to use centroids for neighbor calculations
    */
@@ -69,6 +86,10 @@ export async function createWeights({
   isQueen,
   distanceThreshold,
   isMile,
+  bandwidth,
+  kernel,
+  useKernelDiagonals,
+  power,
   useCentroids,
   precisionThreshold,
   orderOfContiguity,
@@ -131,6 +152,31 @@ export async function createWeights({
       type: weightsType,
       symmetry: 'symmetric',
       threshold: distanceThreshold || 0.0,
+      isMile: isMile || false,
+    };
+  } else if (weightsType === 'kernel') {
+    const kernelBandwidth = bandwidth || 0.0;
+    if (!Number.isFinite(kernelBandwidth) || kernelBandwidth <= 0) {
+      throw new Error('bandwidth is required and must be a finite, positive number for kernel weights');
+    }
+    const kernelName = kernel || 'gaussian';
+
+    weights = await getKernelWeightsFromGeomCollection({
+      geomCollection,
+      bandwidth: kernelBandwidth,
+      kernel: kernelName,
+      isMile: isMile || false,
+      useKernelDiagonals: useKernelDiagonals !== undefined ? useKernelDiagonals : false,
+      power: power !== undefined ? power : 1.0,
+    });
+
+    weightsMeta = {
+      ...getMetaFromWeights(weights, true),
+      type: weightsType,
+      symmetry: 'symmetric',
+      bandwidth: kernelBandwidth,
+      kernel: kernelName,
+      power: power !== undefined ? power : 1.0,
       isMile: isMile || false,
     };
   } else {

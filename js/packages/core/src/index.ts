@@ -7,6 +7,9 @@ export type { GeometryCollection } from '@geoda/common';
 export * from './init';
 
 export * from './weights/distance-neighbors';
+export * from './weights/neighbor-match-test';
+export * from './weights/kernel-knn-weights';
+export * from './weights/kernel-weights';
 export * from './weights/nearest-neighbors';
 export * from './weights/contiguity-neighbors';
 export * from './weights/weights-stats';
@@ -30,6 +33,7 @@ export * from './clustering/skater';
 export * from './clustering/azp';
 export * from './clustering/maxp';
 export * from './clustering/spatial-validation';
+export * from './clustering/make-spatial';
 
 export * from './mapping/quantile';
 export * from './mapping/natural-breaks';

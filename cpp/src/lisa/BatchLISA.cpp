@@ -11,6 +11,7 @@
 #include <time.h>
 
 #include "weights/geoda-weight.h"
+#include "utils/rnd.h"
 #include "lisa/GeoDaSet.h"
 
 #ifndef __NO_THREAD__
@@ -173,9 +174,16 @@ bool BatchLISA::GetHasUndefined() { return has_undefined; }
 
 void BatchLISA::CalcPseudoP() {
   if (!calc_significances) return;
+#ifndef __NO_THREAD__
   CalcPseudoP_threaded();
+#else
+  // single-threaded fallback when threading is disabled
+  if (!reuse_last_seed) last_seed_used = time(0);
+  CalcPseudoP_range(0, num_obs - 1, last_seed_used);
+#endif
 }
 
+#ifndef __NO_THREAD__
 void BatchLISA::CalcPseudoP_threaded() {
 #ifndef __USE_PTHREAD__
   if (nCPUs <= 0) nCPUs = boost::thread::hardware_concurrency();
@@ -236,6 +244,13 @@ void BatchLISA::CalcPseudoP_threaded() {
   delete[] threadPool;
 #endif
 }
+#else
+void BatchLISA::CalcPseudoP_threaded() {
+  // single-threaded stub (used only to satisfy the vtable when threading is disabled)
+  if (!reuse_last_seed) last_seed_used = time(0);
+  CalcPseudoP_range(0, num_obs - 1, last_seed_used);
+}
+#endif  // __NO_THREAD__
 
 void BatchLISA::CalcPseudoP_range(int obs_start, int obs_end, uint64_t seed_start) {
   GeoDaSet workPermutation(num_obs);

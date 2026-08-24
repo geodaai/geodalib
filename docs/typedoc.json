@@ -7,5 +7,9 @@
   "plugin": ["typedoc-plugin-markdown", "typedoc-vitepress-theme"],
   // "theme": "typedoc-vitepress-theme",
   "out": "api",
-  "skipErrorChecking": true
+  "skipErrorChecking": true,
+  // Pin the source repository used for generated "Defined in" links so they
+  // point at the canonical repo regardless of the local git remote.
+  "gitRemote": "https://github.com/GeoDaCenter/geoda-lib",
+  "gitRevision": "main"
 }

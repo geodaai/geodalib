@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "clustering-api.h"
+#include "make_spatial.h"
 #include "schc_wrapper.h"
 #include "redcap_wrapper.h"
 #include "azp_wrapper.h"
@@ -239,5 +240,17 @@ ValidationResult geoda::spatial_validation(const std::vector<int>& clusters,
 
   delete w;
   for (int i = 0; i < num_obs; ++i) delete geom_contents[i];
+  return result;
+}
+
+std::vector<std::vector<int>> geoda::make_spatial(const std::vector<std::vector<int>>& clusters,
+                                                  const std::vector<std::vector<unsigned int>>& neighbors) {
+  int num_obs = static_cast<int>(neighbors.size());
+  GeoDaWeight* w = new VectorWeight(neighbors);
+
+  MakeSpatial ms(num_obs, clusters, w);
+  ms.Run();
+  std::vector<std::vector<int>> result = ms.GetClusters();
+  delete w;
   return result;
 }

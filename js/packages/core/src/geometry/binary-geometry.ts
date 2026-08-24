@@ -73,6 +73,9 @@ export function createPointCollectionFromBinaryFeatures(
   const parts = new wasm.VectorUInt();
   const sizes = new wasm.VectorUInt();
 
+  // parts index into the concatenated xs/ys arrays, so each chunk's part starts
+  // must be offset by the coordinates already added from previous chunks.
+  let pointOffset = 0;
   for (let chunkIndex = 0; chunkIndex < pointsArray.length; chunkIndex++) {
     const points = pointsArray[chunkIndex];
     if (points) {
@@ -82,24 +85,24 @@ export function createPointCollectionFromBinaryFeatures(
         ys.push_back(coords[i + 1]);
       }
       // get index as the start of each part when points.featureIds.value[i] changed
-      let index = 0;
+      const chunkStart = pointOffset;
+      pointOffset += coords.length / 2;
+      let index = chunkStart;
       for (let i = 0; i < points.featureIds.value.length; i++) {
-        if (i === 0) {
-          parts.push_back(index);
-        } else if (points.featureIds.value[i] !== points.featureIds.value[i - 1]) {
+        if (i === 0 || points.featureIds.value[i] !== points.featureIds.value[i - 1]) {
           parts.push_back(index);
         }
         index++;
       }
-      // get sizes from parts
-      for (let i = 1; i < parts.size(); i++) {
-        sizes.push_back(parts.get(i) - parts.get(i - 1));
-      }
-      // add the last size
-      if (parts.size() > 0) {
-        sizes.push_back(index - parts.get(parts.size() - 1));
-      }
     }
+  }
+  // get sizes from the full parts list
+  for (let i = 1; i < parts.size(); i++) {
+    sizes.push_back(parts.get(i) - parts.get(i - 1));
+  }
+  // add the last size
+  if (parts.size() > 0) {
+    sizes.push_back(pointOffset - parts.get(parts.size() - 1));
   }
   const pointCollection = new wasm.PointCollection(xs, ys, parts, sizes, convertToUTM || false);
   return pointCollection;
