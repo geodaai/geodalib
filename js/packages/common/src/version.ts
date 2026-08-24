@@ -1,4 +1,4 @@
 // SPDX-License-Identifier: MIT
 // Copyright contributors to the geodalib project
 
-export const VERSION = '0.0.22';
+export const VERSION = '0.0.23';
