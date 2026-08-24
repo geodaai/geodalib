@@ -76,6 +76,32 @@ TEST(WEIGHTS, KERNEL_KNN_WEIGHTS_ADAPTIVE) {
   }
 }
 
+TEST(WEIGHTS, KERNEL_KNN_WEIGHTS_INVERSE_TRUNCATES_SUPPORT) {
+  // Points spaced ~0.16 km apart. With inverse distance weighting (1 / distance^1)
+  // and an adaptive bandwidth equal to that same distance, the normalized ratio
+  // z = (1 / d) / bandwidth > 1 for every neighbor. Compact-support kernels (e.g.
+  // triangular) must clamp to 0 instead of producing a negative weight.
+  geoda::PointCollection close_points(std::vector<double>{0, 0.001, 0.002}, std::vector<double>{0, 0.001, 0.002},
+                                      std::vector<unsigned int>{0, 1, 2}, std::vector<unsigned int>{1, 1, 1});
+  std::vector<std::vector<double>> result =
+      geoda::kernel_knn_weights(close_points, 1, "triangular", false, false, 1.0, true, true);
+  ASSERT_EQ(result.size(), 3);
+
+  for (size_t i = 0; i < result.size(); ++i) {
+    auto pairs = to_pairs(result[i]);
+    ASSERT_EQ(pairs.size(), 2u);  // 1 neighbor + self
+    for (const auto& p : pairs) {
+      if (p.first == static_cast<double>(i)) {
+        EXPECT_EQ(p.second, 1.0);  // self weight stays 1.0
+      } else {
+        // z > 1, so the triangular weight must be truncated to 0, never negative
+        EXPECT_GE(p.second, 0.0);
+        EXPECT_LE(p.second, 1.0);
+      }
+    }
+  }
+}
+
 TEST(WEIGHTS, KERNEL_KNN_WEIGHTS_GLOBAL_UNIFORM) {
   bool is_mile = false;
   unsigned int k = 2;

@@ -121,7 +121,8 @@ export async function getKernelKnnWeightsFromGeomCollection({
    */
   useKernelDiagonals?: boolean;
   /**
-   * The power (or exponent) applied to the distance before normalizing by the bandwidth.
+   * The power (or exponent) used by the inverse distance weighting
+   * (1 / distance^power). Only applied when isInverse is true.
    */
   power?: number;
   /**
@@ -130,7 +131,7 @@ export async function getKernelKnnWeightsFromGeomCollection({
    */
   adaptiveBandwidth?: boolean;
   /**
-   * Whether to apply inverse distance weighting before the kernel.
+   * Whether to apply inverse distance weighting (1 / distance^power) before the kernel.
    */
   isInverse?: boolean;
 }): Promise<number[][]> {

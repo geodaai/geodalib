@@ -72,7 +72,7 @@ The kernel function (triangular, uniform, epanechnikov, quartic, gaussian).
 
 `number` = `1.0`
 
-The power (or exponent) applied to the distance before normalizing by the bandwidth.
+The power (or exponent) used by the inverse distance weighting (1 / distance^power). Only applied when isInverse is true.
 
 #### useKernelDiagonals?
 

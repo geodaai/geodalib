@@ -32,7 +32,12 @@ std::string to_lower(const std::string& str) {
 /**
  * @brief Apply a kernel function to the distance ratio z = distance / bandwidth.
  *
- * The kernel functions follow Anselin and Rey (2010), table 5.4.
+ * The kernel functions follow Anselin and Rey (2010), table 5.4. Kernels with
+ * compact support (triangular, uniform, epanechnikov, quartic) are defined for
+ * z in [0, 1] and return 0 outside that range; the gaussian kernel is defined
+ * for all z. Since z can exceed 1 (e.g. when the inverse-distance power is
+ * applied), the compact-support kernels must clamp to 0 to avoid producing
+ * negative or non-zero weights outside their support.
  *
  * @param kernel The name of the kernel. Supported: triangular, uniform, epanechnikov, quartic, gaussian.
  * @param z The distance ratio (distance / bandwidth).
@@ -41,16 +46,16 @@ std::string to_lower(const std::string& str) {
 double kernel_value(const std::string& kernel, double z) {
   const std::string k = to_lower(kernel);
   if (k == "triangular") {
-    return 1.0 - z;
+    return (z > 1.0) ? 0.0 : 1.0 - z;
   }
   if (k == "uniform") {
-    return 0.5;
+    return (z > 1.0) ? 0.0 : 0.5;
   }
   if (k == "epanechnikov") {
-    return (3.0 / 4.0) * (1.0 - z * z);
+    return (z > 1.0) ? 0.0 : (3.0 / 4.0) * (1.0 - z * z);
   }
   if (k == "quartic") {
-    return (15.0 / 16.0) * std::pow(1.0 - z * z, 2.0);
+    return (z > 1.0) ? 0.0 : (15.0 / 16.0) * std::pow(1.0 - z * z, 2.0);
   }
   if (k == "gaussian") {
     return (1.0 / std::sqrt(2.0 * geoda::pi)) * std::exp(-z * z / 2.0);
@@ -118,7 +123,8 @@ std::vector<std::vector<double>> geoda::kernel_knn_weights(const GeometryCollect
     // normalize and apply kernel to each neighbor pair
     for (size_t j = 0; j + 1 < raw_weights[i].size(); j += 2) {
       double d = raw_weights[i][j + 1];
-      if (is_inverse) d = std::pow(d, power);
+      // inverse distance weighting: replace the distance with 1 / distance^power
+      if (is_inverse) d = 1.0 / std::pow(d, power);
       double z = (b > 0.0) ? d / b : 0.0;
       result[i].push_back(raw_weights[i][j]);
       result[i].push_back(kernel_value(kern, z));
