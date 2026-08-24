@@ -27,6 +27,12 @@ export * from './geometry/thiessen-polygon';
 export * from './geometry/mst';
 export * from './geometry/cartogram';
 export * from './geometry/utils';
+export * from './clustering/schc';
+export * from './clustering/redcap';
+export * from './clustering/skater';
+export * from './clustering/azp';
+export * from './clustering/maxp';
+export * from './clustering/spatial-validation';
 export * from './clustering/make-spatial';
 
 export * from './mapping/quantile';

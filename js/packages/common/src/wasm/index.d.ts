@@ -517,6 +517,59 @@ export class LisaResult {
   delete(): void;
 }
 
+export class Fragmentation {
+  n: number;
+  entropy: number;
+  simpson: number;
+  minClusterSize: number;
+  maxClusterSize: number;
+  meanClusterSize: number;
+  spatiallyContiguous: boolean;
+}
+
+export class Compactness {
+  area: number;
+  perimeter: number;
+  isoperimeterQuotient: number;
+}
+
+export class Diameter {
+  steps: number;
+  ratio: number;
+}
+
+export class JoinCountRatio {
+  cluster: number;
+  n: number;
+  ratio: number;
+}
+
+export class ValidationResult {
+  spatiallyConstrained: boolean;
+  fragmentation: Fragmentation;
+  clusterFragmentation: VectorFragmentation;
+  clusterDiameter: VectorDiameter;
+  clusterCompactness: VectorCompactness;
+  joincountRatio: VectorJoinCountRatio;
+}
+
+export class VectorFragmentation {
+  size(): number;
+  get(i: number): Fragmentation;
+}
+export class VectorDiameter {
+  size(): number;
+  get(i: number): Diameter;
+}
+export class VectorCompactness {
+  size(): number;
+  get(i: number): Compactness;
+}
+export class VectorJoinCountRatio {
+  size(): number;
+  get(i: number): JoinCountRatio;
+}
+
 /**
  * Result of a batch LISA computation (per-variable arrays).
  */
@@ -915,6 +968,156 @@ export interface GeoDaModule {
    * @param k the number of nearest neighbors
    */
   getNearestNeighbors(geometries: GeometryCollection, k: UnsignedInt): VecVecUInt;
+
+  /**
+   * Spatially constrained hierarchical clustering (SCHC)
+   * @param k the number of clusters
+   * @param neighbors spatial weights matrix as adjacency list
+   * @param data multivariate data (one array per variable)
+   * @param scaleMethod raw | standardize
+   * @param linkageMethod single | complete | average | ward
+   * @param distanceMethod euclidean | manhattan
+   * @param boundVals optional bound values per observation
+   * @param minBound minimum bound
+   */
+  schc(
+    k: UnsignedInt,
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    scaleMethod: string,
+    linkageMethod: string,
+    distanceMethod: string,
+    boundVals: VectorDouble,
+    minBound: Double
+  ): VecVecInt;
+
+  /**
+   * Regionally constrained clustering (REDCAP)
+   * @param k the number of clusters
+   * @param neighbors spatial weights matrix as adjacency list
+   * @param data multivariate data
+   * @param scaleMethod raw | standardize
+   * @param redcapMethod firstorder-singlelinkage | fullorder-completelinkage | fullorder-averagelinkage | fullorder-singlelinkage | fullorder-wardlinkage
+   * @param distanceMethod euclidean | manhattan
+   * @param boundVals optional bound values per observation
+   * @param minBound minimum bound
+   */
+  redcap(
+    k: UnsignedInt,
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    scaleMethod: string,
+    redcapMethod: string,
+    distanceMethod: string,
+    boundVals: VectorDouble,
+    minBound: Double
+  ): VecVecInt;
+
+  /**
+   * Spatially constrained clustering (SKATER)
+   * @param k the number of clusters
+   * @param neighbors spatial weights matrix as adjacency list
+   * @param data multivariate data
+   * @param scaleMethod raw | standardize
+   * @param distanceMethod euclidean | manhattan
+   * @param boundVals optional bound values per observation
+   * @param minBound minimum bound
+   */
+  skater(
+    k: UnsignedInt,
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    scaleMethod: string,
+    distanceMethod: string,
+    boundVals: VectorDouble,
+    minBound: Double
+  ): VecVecInt;
+
+  /**
+   * AZP (Automatic Zoning Procedure) greedy regionalization
+   */
+  azpGreedy(
+    p: UnsignedInt,
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    inits: UnsignedInt,
+    distanceMethod: string,
+    rndSeed: number
+  ): VecVecInt;
+
+  /**
+   * Max-P greedy regionalization
+   */
+  maxpGreedy(
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    iterations: UnsignedInt,
+    distanceMethod: string,
+    rndSeed: number
+  ): VecVecInt;
+
+  /**
+   * AZP with simulated annealing
+   */
+  azpSA(
+    p: UnsignedInt,
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    inits: UnsignedInt,
+    coolingRate: Double,
+    saMaxit: UnsignedInt,
+    distanceMethod: string,
+    rndSeed: number
+  ): VecVecInt;
+
+  /**
+   * AZP with tabu search
+   */
+  azpTabu(
+    p: UnsignedInt,
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    inits: UnsignedInt,
+    tabuLength: UnsignedInt,
+    convTabu: UnsignedInt,
+    distanceMethod: string,
+    rndSeed: number
+  ): VecVecInt;
+
+  /**
+   * Max-P with simulated annealing
+   */
+  maxpSA(
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    iterations: UnsignedInt,
+    coolingRate: Double,
+    saMaxit: UnsignedInt,
+    distanceMethod: string,
+    rndSeed: number
+  ): VecVecInt;
+
+  /**
+   * Max-P with tabu search
+   */
+  maxpTabu(
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    iterations: UnsignedInt,
+    tabuLength: UnsignedInt,
+    convTabu: UnsignedInt,
+    distanceMethod: string,
+    rndSeed: number
+  ): VecVecInt;
+
+  /**
+   * Spatial validation of a clustering result
+   */
+  spatialValidation(
+    clusters: VectorInt,
+    neighbors: VecVecUInt,
+    geoms: GeometryCollection
+  ): ValidationResult;
 
   /**
    * Make clusters spatially contiguous
