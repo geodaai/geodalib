@@ -16,7 +16,11 @@ local join count.
 ```ts
 import { localBiJoinCount } from '@geoda/lisa';
 
-const result = await localBiJoinCount({ data: [nsa, nsa_inv], neighbors });
+const nsa = [1, 0, 1, 1, 0, 1];
+const nsaInv = nsa.map(v => 1 - v);
+const neighbors = [[1], [0], [], [4, 5], [3, 5], [3, 4]];
+
+const result = await localBiJoinCount({ data: [nsa, nsaInv], neighbors });
 console.log(result);
 ```
 
