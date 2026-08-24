@@ -97,12 +97,10 @@ export async function multivariateQuantileLisa({
     wasmNeighbors.push_back(wNbrs);
   }
 
+  // The C++ wrapper treats a missing/empty undefs argument as "no undefined
+  // values", so an empty structure is enough; populating per-variable zero
+  // vectors would be O(numVars*n) wasted allocations on large datasets.
   const wasmUndefs = new wasm.VecVecUInt();
-  for (let v = 0; v < data.length; ++v) {
-    const undef = new wasm.VectorUInt();
-    undef.resize(n, 0);
-    wasmUndefs.push_back(undef);
-  }
 
   const result = wasm.multivariateQuantileLisa(
     wasmK,
