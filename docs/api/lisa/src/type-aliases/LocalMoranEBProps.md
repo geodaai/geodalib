@@ -22,9 +22,9 @@ Configuration properties for Empirical Bayes smoothed Local Moran calculation.
 
 > **neighbors**: `number`[][]
 
-### permutation
+### permutation?
 
-> **permutation**: `number`
+> `optional` **permutation**: `number`
 
 ### seed?
 
