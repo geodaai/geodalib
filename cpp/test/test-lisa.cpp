@@ -223,6 +223,57 @@ TEST(LISA, LOCAL_JOIN_COUNT_OUT_OF_RANGE_NEIGHBOR) {
   EXPECT_FALSE(result.is_valid);
 }
 
+TEST(LISA, LOCAL_JOIN_COUNT_NON_BINARY_REJECTED) {
+  // UniJoinCount treats any positive value as 1-valued and adds the raw neighbor
+  // value to the lag, so a non-binary value (e.g. 2) would produce a meaningless
+  // count; the wrapper rejects it with the invalid contract.
+  std::vector<double> data = {1, 2, 1};
+  std::vector<unsigned int> undefs = {0, 0, 0};
+
+  geoda::LisaResult result = geoda::local_joincount(data, TEST_NEIGHBORS, undefs, 0.05, 99, 12345);
+
+  EXPECT_FALSE(result.is_valid);
+  ASSERT_EQ(result.sig_cat_vec.size(), 3u);
+  EXPECT_EQ(result.sig_cat_vec[0], 6);
+}
+
+TEST(LISA, MULTIVARIATE_JOIN_COUNT_NON_BINARY_REJECTED) {
+  // MultiJoinCount multiplies raw values into its integer zz, so a non-binary
+  // value would produce invalid colocations; the wrapper rejects it.
+  std::vector<std::vector<double>> data = {{1, 0, 1}, {1, 2, 1}};
+  std::vector<std::vector<unsigned int>> undefs = {{0, 0, 0}, {0, 0, 0}};
+
+  geoda::LisaResult result =
+      geoda::local_multijoincount(data, TEST_NEIGHBORS, undefs, 0.05, 99, 12345);
+
+  EXPECT_FALSE(result.is_valid);
+  ASSERT_EQ(result.sig_cat_vec.size(), 3u);
+  EXPECT_EQ(result.sig_cat_vec[0], 6);
+}
+
+TEST(LISA, MULTIVARIATE_JOIN_COUNT_COMPLEMENTARY_SUM_NOT_PAIRS) {
+  // obs 0 and obs 1 are colocations (1,1), obs 2 and obs 3 are (0,0). The
+  // marginal 1-counts sum to num_valid (2 + 2 == 4), but the rows are not
+  // complementary, so this valid colocation input must be forwarded to
+  // MultiJoinCount rather than rejected as a no-colocation case. Regression: the
+  // guard used to compare only marginal sums and wrongly rejected inputs like
+  // this.
+  std::vector<std::vector<double>> data = {{1, 1, 0, 0}, {1, 1, 0, 0}};
+  std::vector<std::vector<unsigned int>> undefs = {{0, 0, 0, 0}, {0, 0, 0, 0}};
+  std::vector<std::vector<unsigned int>> nbrs = {{1}, {0}, {3}, {2}};
+
+  geoda::LisaResult result =
+      geoda::local_multijoincount(data, nbrs, undefs, 0.05, 99, 12345);
+
+  EXPECT_TRUE(result.is_valid);
+  ASSERT_EQ(result.lisa_vec.size(), 4u);
+  // Each colocation is the other's neighbor, so both report a local count of 1.
+  EXPECT_DOUBLE_EQ(result.lisa_vec[0], 1.0);
+  EXPECT_DOUBLE_EQ(result.lisa_vec[1], 1.0);
+  EXPECT_DOUBLE_EQ(result.lisa_vec[2], 0.0);
+  EXPECT_DOUBLE_EQ(result.lisa_vec[3], 0.0);
+}
+
 TEST(LISA, LOCAL_JOIN_COUNT_DATA_LENGTH_MISMATCH) {
   // data shorter than the neighbor list would read past the buffer during
   // compaction; the wrapper rejects it.

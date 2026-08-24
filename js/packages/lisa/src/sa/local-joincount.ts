@@ -70,6 +70,16 @@ export async function localJoinCount({
 }: LocalJoinCountProps): Promise<LocalJoinCountResult> {
   const wasm = await initWASM();
 
+  // This is a binary (0/1) join count: UniJoinCount treats any positive value as
+  // 1-valued and adds the raw neighbor value to the lag, so reject non-binary
+  // data with a clear error instead of returning meaningless counts (matching the
+  // pygeoda wrapper).
+  for (const val of data) {
+    if (Number(val) !== 0 && Number(val) !== 1) {
+      throw new Error(`localJoinCount: data must be binary (0/1), got ${String(val)}`);
+    }
+  }
+
   // The C++ wrapper treats the neighbor list as the population (num_obs =
   // neighbors.length) and validates that data has exactly that many entries, so
   // pass the inputs through untouched instead of resizing/padding (a padded
@@ -144,6 +154,17 @@ export async function multivariateLocalJoinCount({
   seed = 1234567890,
 }: MultivariateLocalJoinCountProps): Promise<LocalJoinCountResult> {
   const wasm = await initWASM();
+
+  // MultiJoinCount multiplies raw values into its integer zz, so non-binary data
+  // would produce invalid colocations; reject it with a clear error before
+  // constructing the native vectors (matching the pygeoda wrapper).
+  for (const variable of data) {
+    for (const val of variable) {
+      if (Number(val) !== 0 && Number(val) !== 1) {
+        throw new Error(`multivariateLocalJoinCount: data must be binary (0/1), got ${String(val)}`);
+      }
+    }
+  }
 
   const n = neighbors.length;
   const wasmData = new wasm.VecVecDouble();

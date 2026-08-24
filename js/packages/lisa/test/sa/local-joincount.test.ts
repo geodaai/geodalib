@@ -56,6 +56,17 @@ describe('localJoinCount()', () => {
 
     expect(result.isValid).toBe(false);
   });
+
+  it('should reject non-binary data', async () => {
+    // UniJoinCount treats any positive value as 1-valued, so a value like 2 would
+    // silently skew the counts; the JS wrapper throws instead.
+    const data = [1, 2, 1, 1, 0, 1];
+    const neighbors = [[1], [0], [], [4, 5], [3, 5], [3, 4]];
+
+    await expect(localJoinCount({ data, neighbors })).rejects.toThrow(
+      'localJoinCount: data must be binary (0/1)'
+    );
+  });
 });
 
 describe('multivariateLocalJoinCount()', () => {
@@ -108,5 +119,19 @@ describe('multivariateLocalJoinCount()', () => {
     const result = await multivariateLocalJoinCount({ data, neighbors });
 
     expect(result.isValid).toBe(false);
+  });
+
+  it('should reject non-binary data in any variable', async () => {
+    // MultiJoinCount multiplies raw values into its integer zz, so a value like 2
+    // would produce an invalid colocation count; the JS wrapper throws instead.
+    const data = [
+      [1, 1, 0, 1, 0, 1],
+      [1, 2, 0, 1, 0, 1],
+    ];
+    const neighbors = [[1], [0], [], [4, 5], [3, 5], [3, 4]];
+
+    await expect(multivariateLocalJoinCount({ data, neighbors })).rejects.toThrow(
+      'multivariateLocalJoinCount: data must be binary (0/1)'
+    );
   });
 });

@@ -18,9 +18,9 @@ Configuration properties for Multivariate Local Join Count calculation.
 
 > **neighbors**: `number`[][]
 
-### permutation
+### permutation?
 
-> **permutation**: `number`
+> `optional` **permutation**: `number`
 
 ### seed?
 

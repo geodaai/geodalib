@@ -18,9 +18,9 @@ Configuration properties for Local Join Count
 
 > **neighbors**: `number`[][]
 
-### permutation
+### permutation?
 
-> **permutation**: `number`
+> `optional` **permutation**: `number`
 
 ### seed?
 

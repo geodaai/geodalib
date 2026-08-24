@@ -41,13 +41,21 @@ static bool compact_neighbors(const std::vector<std::vector<unsigned int>>& neig
                               const std::vector<unsigned int>& orig_to_comp, size_t num_valid,
                               std::vector<std::vector<unsigned int>>& comp_nbrs) {
   const unsigned int kUndefined = std::numeric_limits<unsigned int>::max();
+  // Validate every neighbor ID up front, including rows whose source observation
+  // is undefined (they are skipped below but must still be well-formed), so a
+  // malformed adjacency list is rejected rather than partially analyzed.
+  for (size_t i = 0; i < neighbors.size(); ++i) {
+    const std::vector<unsigned int>& nbrs = neighbors[i];
+    for (unsigned int nb : nbrs) {
+      if (nb >= orig_to_comp.size()) return false;
+    }
+  }
   comp_nbrs.resize(num_valid);
   for (size_t i = 0; i < neighbors.size(); ++i) {
     unsigned int c = orig_to_comp[i];
     if (c == kUndefined) continue;
     const std::vector<unsigned int>& nbrs = neighbors[i];
     for (unsigned int nb : nbrs) {
-      if (nb >= orig_to_comp.size()) return false;
       unsigned int comp_nb = orig_to_comp[nb];
       if (comp_nb != kUndefined) {
         comp_nbrs[c].push_back(comp_nb);
@@ -137,6 +145,15 @@ geoda::LisaResult geoda::local_joincount(const std::vector<double>& data,
   std::vector<double> comp_data(num_valid);
   for (size_t c = 0; c < num_valid; ++c) {
     comp_data[c] = data[comp_to_orig[c]];
+  }
+  // This is a binary (0/1) join count: UniJoinCount treats any positive value as
+  // 1-valued and adds the raw neighbor value to the lag, so non-binary data would
+  // return meaningless counts. Reject values that are not exactly 0 or 1.
+  for (size_t c = 0; c < num_valid; ++c) {
+    if (comp_data[c] != 0.0 && comp_data[c] != 1.0) {
+      expand_result(result, num_obs, comp_to_orig, neighbors);
+      return result;
+    }
   }
   std::vector<std::vector<unsigned int>> comp_nbrs;
   if (!compact_neighbors(neighbors, orig_to_comp, num_valid, comp_nbrs)) {
@@ -228,18 +245,34 @@ geoda::LisaResult geoda::local_multijoincount(const std::vector<std::vector<doub
     }
   }
 
+  // MultiJoinCount multiplies raw values into its integer zz, so non-binary data
+  // would produce invalid colocations and statistics; reject values that are not
+  // exactly 0 or 1.
+  for (size_t v = 0; v < num_vars; ++v) {
+    for (size_t c = 0; c < num_valid; ++c) {
+      if (comp_data[v][c] != 0.0 && comp_data[v][c] != 1.0) {
+        expand_result(result, num_obs, comp_to_orig, neighbors);
+        return result;
+      }
+    }
+  }
+
   // The complementary bivariate no-colocation case (every observation has exactly
   // one variable = 1) is served by local_bijoincount, not the multivariate
   // colocation join count. Match that contract and reject only that case; other
   // bivariate inputs (e.g. with (0,0) observations) are forwarded to
-  // MultiJoinCount.
+  // MultiJoinCount. The per-observation pair is checked because the marginal
+  // 1-counts alone can sum to num_valid for a valid colocation input such as
+  // (1,1)+(0,0) rows.
   if (num_vars == 2) {
-    size_t ones0 = 0, ones1 = 0;
+    bool all_complementary = true;
     for (size_t c = 0; c < num_valid; ++c) {
-      if (comp_data[0][c] == 1.0) ++ones0;
-      if (comp_data[1][c] == 1.0) ++ones1;
+      if (comp_data[0][c] + comp_data[1][c] != 1.0) {
+        all_complementary = false;
+        break;
+      }
     }
-    if (ones0 + ones1 == num_valid) {
+    if (all_complementary) {
       expand_result(result, num_obs, comp_to_orig, neighbors);
       return result;
     }
