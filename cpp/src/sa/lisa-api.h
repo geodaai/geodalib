@@ -73,6 +73,15 @@ struct BatchLisaResult {
 
 static void set_batch_lisa_content(BatchLISA* lisa, BatchLisaResult& rst, size_t num_vars) {
   rst.is_valid = true;
+  // Clear first so the helper is idempotent when rst is reused.
+  rst.lisa_values.clear();
+  rst.sig_values.clear();
+  rst.cluster_values.clear();
+  rst.lag_values.clear();
+  rst.lisa_values.reserve(num_vars);
+  rst.sig_values.reserve(num_vars);
+  rst.cluster_values.reserve(num_vars);
+  rst.lag_values.reserve(num_vars);
   for (size_t i = 0; i < num_vars; ++i) {
     rst.lisa_values.push_back(lisa->GetLISAValues(static_cast<int>(i)));
     rst.sig_values.push_back(lisa->GetLocalSignificanceValues(static_cast<int>(i)));

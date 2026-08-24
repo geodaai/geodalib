@@ -31,4 +31,24 @@ describe('batchLocalMoran()', () => {
     const result = await batchLocalMoran({ data, neighbors: TEST_QUEEN_WEIGHTS, permutation: 99 });
     expect(result.isValid).toBe(true);
   });
+
+  it('should reject variables whose length does not match the observations', async () => {
+    const data = [
+      [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+      [6.0, 5.0, 4.0, 3.0, 2.0],
+    ];
+    const neighbors = [[1], [0, 2], [1, 3], [2, 4], [3, 5], [4]];
+
+    await expect(batchLocalMoran({ data, neighbors, permutation: 99 })).rejects.toThrow(
+      /each variable must have 6 values/
+    );
+  });
+
+  it('should reject empty data', async () => {
+    const neighbors = [[1], [0, 2], [1, 3], [2, 4], [3, 5], [4]];
+
+    await expect(batchLocalMoran({ data: [], neighbors, permutation: 99 })).rejects.toThrow(
+      /at least one variable/
+    );
+  });
 });

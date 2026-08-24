@@ -64,6 +64,20 @@ export async function batchLocalMoran({
   const wasm = await initWASM();
 
   const n = neighbors.length;
+  if (n === 0) {
+    throw new Error('batchLocalMoran: neighbors must contain at least one observation');
+  }
+  if (data.length === 0) {
+    throw new Error('batchLocalMoran: data must contain at least one variable');
+  }
+  for (const varData of data) {
+    if (varData.length !== n) {
+      throw new Error(
+        `batchLocalMoran: each variable must have ${n} values, got ${varData.length}`
+      );
+    }
+  }
+
   const wasmData = new wasm.VecVecDouble();
   for (const varData of data) {
     const wasmVar = new wasm.VectorDouble();
