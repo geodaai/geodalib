@@ -333,7 +333,8 @@ Fragmentation SpatialValidationCluster::ComputeFragmentation()
     }
     
     // max and min size of contiguous subcluster, mean size
-    int min_size = 0, max_size = 0, mean_size = GetSize() / (double)k;
+    int min_size = 0, max_size = 0;
+    double mean_size = GetSize() / (double)k;
     
     for (int i = 0; i < k; ++i) {
         int sz = components[i]->GetSize();
@@ -516,7 +517,8 @@ void SpatialValidation::ComputeFragmentation()
     // provide list with cluster sizes for each cluster
     double entropy = 0;
     int k = (int) sk_clusters.size();
-    int min_size = 0, max_size  = 0, mean_size = num_obs / (double)k;
+    int min_size = 0, max_size  = 0;
+    double mean_size = num_obs / (double)k;
     
     for (int i = 0; i < k; ++i) {
         // number of observations in cluster, fraction of total in cluster

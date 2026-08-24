@@ -7,6 +7,7 @@
 #ifndef GEODA_CENTER_GEOFATURE_H
 #define GEODA_CENTER_GEOFATURE_H
 
+#include <cmath>
 #include <vector>
 
 namespace gda {

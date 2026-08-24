@@ -87,13 +87,20 @@ redcap_wrapper::redcap_wrapper(unsigned int k,
             if (weight) delete[] weight;
             if (_bound_vals) delete[] _bound_vals;
             if (distances && dist_matrix == NULL) {
-                for (int i = 1; i < num_obs; i++) free(distances[i]);
-                free(distances);
+                // only free when we allocated the matrix ourselves; when the
+                // caller supplied dist_matrix it stays owned by the caller.
+                for (int i = 1; i < num_obs; i++) delete[] distances[i];
+                delete[] distances;
+            }
+            if (mask) {
+                for (int i = 0; i < num_obs; ++i) delete[] mask[i];
+                delete[] mask;
             }
             if (matrix) {
                 for (int i = 0; i < num_obs; ++i) delete[] matrix[i];
                 delete[] matrix;
             }
+            if (redcap) delete redcap;
         }
     }
 }

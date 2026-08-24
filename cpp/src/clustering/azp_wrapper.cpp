@@ -78,8 +78,23 @@ void azp_wrapper::Run() {
                 cluster_ids.push_back(it->second);
             }
 
-            for (int i = 1; i < num_obs; i++) free(ragged_distances[i]);
-            free(ragged_distances);
+            if (ragged_distances && dist_matrix == NULL) {
+                // only free when we allocated the matrix ourselves; when the
+                // caller supplied dist_matrix it stays owned by the caller.
+                for (int i = 1; i < num_obs; i++) delete[] ragged_distances[i];
+                delete[] ragged_distances;
+            }
+
+            if (input_data) {
+                for (int i = 0; i < num_obs; ++i) delete[] input_data[i];
+                delete[] input_data;
+                input_data = 0;
+            }
+            if (mask) {
+                for (int i = 0; i < num_obs; ++i) delete[] mask[i];
+                delete[] mask;
+            }
+            if (weight) delete[] weight;
 
             delete dm;
         }

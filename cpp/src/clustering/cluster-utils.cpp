@@ -164,9 +164,10 @@ double euclidean_distance(double* a, const std::vector<double>& b) {
   return std::sqrt(sum);
 }
 void shuffle(std::vector<int>& items, Xoroshiro128Random& rng) {
+  // Fisher-Yates: nextInt(i + 1) is uniform in [0, i] inclusive, so a standard
+  // draw (allowing k == i) keeps the shuffle unbiased.
   for (int i = static_cast<int>(items.size()) - 1; i >= 1; --i) {
     int k = rng.nextInt(i + 1);
-    while (k >= i) k = rng.nextInt(i + 1);
     if (k != i) std::swap(items[i], items[k]);
   }
 }
