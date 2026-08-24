@@ -31,6 +31,9 @@ function validateKernelWeightsInput({
   if (!Number.isFinite(bandwidth) || bandwidth <= 0) {
     throw new Error('bandwidth must be a finite, positive number');
   }
+  if (typeof kernel !== 'string') {
+    throw new Error(`kernel must be a string, got ${typeof kernel}`);
+  }
   const normalizedKernel = kernel.toLowerCase();
   if (!SUPPORTED_KERNELS.includes(normalizedKernel)) {
     throw new Error(`Unsupported kernel: ${kernel}`);

@@ -205,6 +205,11 @@ describe('Kernel Weights', () => {
     await expect(
       getKernelWeightsFromBinaryGeometries({ ...base, bandwidth: 180, power: Number.POSITIVE_INFINITY })
     ).rejects.toThrow('power must be finite');
+
+    await expect(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      getKernelWeightsFromBinaryGeometries({ ...base, bandwidth: 180, kernel: undefined as any })
+    ).rejects.toThrow('kernel must be a string');
   });
 
   it('should accept case-insensitive kernel names', async () => {
