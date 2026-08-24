@@ -24,7 +24,10 @@ class MakeSpatialComponent {
   void SetClusterId(int cid) { this->cid = cid; }
 
   int GetSize() { return static_cast<int>(elements.size()); }
-  std::vector<int> GetElements() { return elements; }
+  // Return by const reference: callers iterate this membership without
+  // mutating it, so copying on every call (merges, move/update paths, core
+  // lookups) would repeatedly allocate large vectors for big datasets.
+  const std::vector<int>& GetElements() { return elements; }
 
   void Merge(MakeSpatialComponent* comp);
 
@@ -52,7 +55,7 @@ class MakeSpatialCluster {
   std::vector<MakeSpatialComponent*> GetComponentsBySize(int component_size);
   void MergeComponent(MakeSpatialComponent* from, MakeSpatialComponent* to);
   void RemoveComponent(MakeSpatialComponent* comp);
-  std::vector<int> GetCoreElements();
+  const std::vector<int>& GetCoreElements();
   int GetCoreSize();
   int GetComponentSize(int eid);
   int GetSmallestComponentSize();

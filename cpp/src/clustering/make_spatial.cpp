@@ -24,7 +24,13 @@ MakeSpatialComponent::MakeSpatialComponent(int cid, const std::vector<int>& elem
     std::map<int, bool> nbr_dict;
     for (size_t i = 0; i < nbrs.size(); ++i) {
       if (elements[0] != static_cast<int>(nbrs[i])) {
-        nbr_dict[cluster_dict[static_cast<int>(nbrs[i])]] = true;
+        // operator[] would insert a default 0 for a neighbor id missing from
+        // cluster_dict; look up without mutating and skip unknown neighbors.
+        std::map<int, int>::const_iterator it =
+            cluster_dict.find(static_cast<int>(nbrs[i]));
+        if (it != cluster_dict.end()) {
+          nbr_dict[it->second] = true;
+        }
       }
     }
     isSurroundedSingleton = nbr_dict.size() == 1;
@@ -43,7 +49,7 @@ bool MakeSpatialComponent::Has(int eid) {
 }
 
 void MakeSpatialComponent::Merge(MakeSpatialComponent* comp) {
-  std::vector<int> new_elements = comp->GetElements();
+  const std::vector<int>& new_elements = comp->GetElements();
   for (size_t i = 0; i < new_elements.size(); ++i) {
     this->elements.push_back(new_elements[i]);
     this->elements_dict[new_elements[i]] = true;
@@ -74,7 +80,10 @@ MakeSpatialCluster::MakeSpatialCluster(int cid, const std::vector<int>& elements
       std::vector<unsigned int> nbrs = weights->GetNeighbors(tmp_id);
       for (size_t j = 0; j < nbrs.size(); ++j) {
         int neighbor = static_cast<int>(nbrs[j]);
-        if (cluster_dict[neighbor] == this->cid && !visited[neighbor]) {
+        // A neighbor missing from cluster_dict cannot belong to this cluster;
+        // use find so the lookup never inserts a default mapping.
+        std::map<int, int>::const_iterator it = cluster_dict.find(neighbor);
+        if (it != cluster_dict.end() && it->second == this->cid && !visited[neighbor]) {
           visited[neighbor] = true;
           stack.push(neighbor);
         }
@@ -101,9 +110,14 @@ MakeSpatialCluster::~MakeSpatialCluster() {
   }
 }
 
-MakeSpatialComponent* MakeSpatialCluster::GetComponent(int eid) { return component_dict[eid]; }
+MakeSpatialComponent* MakeSpatialCluster::GetComponent(int eid) {
+  // find instead of operator[] so a read-only query never inserts a null entry
+  // into component_dict for an unknown element.
+  std::map<int, MakeSpatialComponent*>::const_iterator it = component_dict.find(eid);
+  return it == component_dict.end() ? nullptr : it->second;
+}
 
-std::vector<int> MakeSpatialCluster::GetCoreElements() { return core->GetElements(); }
+const std::vector<int>& MakeSpatialCluster::GetCoreElements() { return core->GetElements(); }
 
 bool MakeSpatialCluster::BelongsToCore(int eid) { return core->Has(eid); }
 
@@ -159,7 +173,7 @@ void MakeSpatialCluster::MergeComponent(MakeSpatialComponent* from, MakeSpatialC
   for (size_t i = 0; i < components.size(); ++i) {
     if (components[i] == to) {
       to->Merge(from);
-      std::vector<int> new_elements = from->GetElements();
+      const std::vector<int>& new_elements = from->GetElements();
       for (size_t j = 0; j < new_elements.size(); ++j) {
         int eid = new_elements[j];
         component_dict[eid] = to;
@@ -176,7 +190,7 @@ void MakeSpatialCluster::RemoveComponent(MakeSpatialComponent* comp) {
   // Erase the removed elements unconditionally: the component's cluster id is
   // never updated before removal, so keeping the erase behind a cid check left
   // dangling pointers in component_dict after the component was deleted.
-  std::vector<int> removed_elements = comp->GetElements();
+  const std::vector<int>& removed_elements = comp->GetElements();
   for (size_t i = 0; i < removed_elements.size(); ++i) {
     int eid = removed_elements[i];
     component_dict.erase(eid);
@@ -279,14 +293,20 @@ void MakeSpatial::MoveComponent(MakeSpatialComponent* comp) {
   int largest_size = 0;
   MakeSpatialComponent* best_to = 0;
 
-  std::vector<int> elements = comp->GetElements();
+  const std::vector<int>& elements = comp->GetElements();
   for (size_t i = 0; i < elements.size(); ++i) {
     int eid = elements[i];
     std::vector<unsigned int> nbrs = weights->GetNeighbors(eid);
     for (size_t j = 0; j < nbrs.size(); ++j) {
       int nbr = static_cast<int>(nbrs[j]);
       if (!comp->Has(nbr)) {
-        int target = this->cluster_dict[nbr];
+        // A neighbor id missing from cluster_dict has no target cluster; skip
+        // it rather than letting operator[] insert a default mapping.
+        std::map<int, int>::const_iterator it = this->cluster_dict.find(nbr);
+        if (it == this->cluster_dict.end()) {
+          continue;
+        }
+        int target = it->second;
         MakeSpatialComponent* to = sk_clusters[target]->GetComponent(nbr);
         if (to != 0 && to != comp && to->GetSize() > largest_size) {
           best_to = to;
@@ -303,7 +323,7 @@ void MakeSpatial::MoveComponent(MakeSpatialComponent* comp) {
 }
 
 void MakeSpatial::UpdateComponent(MakeSpatialComponent* moved_comp, MakeSpatialComponent* target) {
-  std::vector<int> elements = moved_comp->GetElements();
+  const std::vector<int>& elements = moved_comp->GetElements();
   for (size_t i = 0; i < elements.size(); ++i) {
     int eid = elements[i];
     cluster_dict[eid] = target->GetClusterId();
