@@ -34,18 +34,70 @@ export type BatchLocalMoranProps = {
   seed?: number;
 };
 
-function vecVecIntToNumber(v: { size(): number; get(i: number): unknown }): number[][] {
+/**
+ * Converts an embind VecVecInt (vector of VectorInt) to a JS array of arrays,
+ * releasing the embind objects. The outer vector returned by the getter is a
+ * heap copy owned by JS and must be .delete()d to free WASM memory; the inner
+ * handles returned by get() are non-owning aliases that should still be
+ * released so their wrappers do not accumulate.
+ */
+function vecVecIntToNumber(v: { size(): number; get(i: number): unknown; delete(): void }): number[][] {
   const rows: number[][] = [];
-  for (let i = 0; i < v.size(); ++i) rows.push(vecIntToNumber(v.get(i) as never));
+  try {
+    for (let i = 0; i < v.size(); ++i) {
+      const inner = v.get(i) as { delete(): void };
+      try {
+        rows.push(vecIntToNumber(inner as never));
+      } finally {
+        inner.delete();
+      }
+    }
+  } finally {
+    v.delete();
+  }
   return rows;
 }
 
-function vecVecDoubleToNumber(v: { size(): number; get(i: number): unknown }): number[][] {
+/**
+ * Converts a VecVecDouble to a JS array of arrays, releasing the outer vector
+ * (owned by JS) and the inner VectorDouble handles, as in vecVecIntToNumber.
+ */
+function vecVecDoubleToNumber(v: { size(): number; get(i: number): unknown; delete(): void }): number[][] {
   const rows: number[][] = [];
-  for (let i = 0; i < v.size(); ++i) {
-    rows.push(vecDoubleToNumber(v.get(i) as never));
+  try {
+    for (let i = 0; i < v.size(); ++i) {
+      const inner = v.get(i) as { delete(): void };
+      try {
+        rows.push(vecDoubleToNumber(inner as never));
+      } finally {
+        inner.delete();
+      }
+    }
+  } finally {
+    v.delete();
   }
   return rows;
+}
+
+/**
+ * Converts an embind Vector<T> to a JS array and then releases the heap object.
+ * The common helpers convert without deleting, so callers that own the handle
+ * must release it explicitly.
+ */
+function ownedVecIntToNumber(v: { delete(): void }): number[] {
+  try {
+    return vecIntToNumber(v as never);
+  } finally {
+    v.delete();
+  }
+}
+
+function ownedVecStringArray(v: { delete(): void }): string[] {
+  try {
+    return vecStringToArray(v as never);
+  } finally {
+    v.delete();
+  }
 }
 
 /**
@@ -110,14 +162,27 @@ export async function batchLocalMoran({
     seed
   );
 
+  const isValid = result.isValid();
+  const lisaValues = vecVecDoubleToNumber(result.getLisaValues());
+  const pValues = vecVecDoubleToNumber(result.getPValues());
+  const clusters = vecVecIntToNumber(result.getClusters());
+  const lagValues = vecVecDoubleToNumber(result.getLagValues());
+  const nn = ownedVecIntToNumber(result.getNN());
+  const labels = ownedVecStringArray(result.getLabels());
+  const colors = ownedVecStringArray(result.getColors());
+  // BatchLisaResult owns the vectors behind the getters above; by the time we
+  // reach here all of them have been converted to JS arrays and released, so
+  // it is safe to release the result object itself.
+  result.delete();
+
   return {
-    isValid: result.isValid(),
-    lisaValues: vecVecDoubleToNumber(result.getLisaValues()),
-    pValues: vecVecDoubleToNumber(result.getPValues()),
-    clusters: vecVecIntToNumber(result.getClusters()),
-    lagValues: vecVecDoubleToNumber(result.getLagValues()),
-    nn: vecIntToNumber(result.getNN()),
-    labels: vecStringToArray(result.getLabels()),
-    colors: vecStringToArray(result.getColors()),
+    isValid,
+    lisaValues,
+    pValues,
+    clusters,
+    lagValues,
+    nn,
+    labels,
+    colors,
   };
 }
