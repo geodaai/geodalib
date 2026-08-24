@@ -36,6 +36,7 @@ cmake-build-release/
 .idea/
 .vscode/
 build/
+build-cpp/
 tmp/
 node_modules/
 .vscode/

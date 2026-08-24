@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright contributors to the geodalib project
 
+#include <algorithm>
 #include <cctype>
 #include <cmath>
 #include <stdexcept>
@@ -97,11 +98,15 @@ std::vector<std::vector<double>> geoda::kernel_weights(const GeometryCollection&
     // convert bandwidth to degree
     double bandwidth_deg = bandwidth / (is_mile ? mile_per_degree : km_per_degree);
 
-    // create bbox using bandwidth
+    // create bbox using bandwidth. Longitude degrees shrink by cos(latitude),
+    // so widen the bbox in X (clamped) to keep the prefilter conservative and
+    // never exclude a neighbor that is within the bandwidth.
     double x = v.first.get<0>();
     double y = v.first.get<1>();
-    box_type b(point_type(x - bandwidth_deg, y - bandwidth_deg),
-               point_type(x + bandwidth_deg, y + bandwidth_deg));
+    double lon_scale = std::max(0.0001, std::fabs(std::cos(y * M_PI / 180.0)));
+    double lon_delta = bandwidth_deg / lon_scale;
+    box_type b(point_type(x - lon_delta, y - bandwidth_deg),
+               point_type(x + lon_delta, y + bandwidth_deg));
 
     // each point "v" with index "obs"
     std::vector<point_val> q;
