@@ -21,6 +21,22 @@ TEST(LISA, MULTIVARIATE_QUANTILE_LISA) {
   EXPECT_EQ(result.lisa_vec.size(), 3u);
 }
 
+TEST(LISA, MULTIVARIATE_QUANTILE_LISA_UNDEF_MERGE) {
+  // obs 1 is undefined only in the first variable. MultiJoinCount merges the
+  // per-variable undefined flags (an observation is undefined if any variable is
+  // undefined), so obs 1 must be marked undefined. Regression for the merge loop
+  // that used to break out on correctly-sized undef rows and ignore the flags.
+  std::vector<std::vector<unsigned int>> undefs = {{0, 1, 0}, {0, 0, 0}};
+  geoda::LisaResult result =
+      geoda::local_multiquantilelisa({4, 4}, {1, 2}, {{1, 2, 3}, {3, 2, 1}}, TEST_NEIGHBORS, undefs, 0.05, 99, 12345);
+  EXPECT_TRUE(result.is_valid);
+  ASSERT_EQ(result.sig_cat_vec.size(), 3u);
+
+  // obs 1 is undefined: significance category 6 and zero local statistic
+  EXPECT_EQ(result.sig_cat_vec[1], 6);
+  EXPECT_DOUBLE_EQ(result.lisa_vec[1], 0.0);
+}
+
 TEST(LISA, MULTIVARIATE_QUANTILE_LISA_INVALID_INPUTS) {
   std::vector<std::vector<unsigned int>> undefs = {{0, 0, 0}, {0, 0, 0}};
 
