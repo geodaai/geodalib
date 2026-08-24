@@ -31,4 +31,37 @@ describe('localBiJoinCount()', () => {
       'no-colocation'
     );
   });
+
+  it('should reject a non-two-variable input', async () => {
+    const data = [[1, 0, 1]];
+    const neighbors = [[1], [0], []];
+
+    await expect(localBiJoinCount({ data, neighbors, permutation: 99 })).rejects.toThrow(
+      'only applies on two variables'
+    );
+  });
+
+  it('should reject non-binary values', async () => {
+    const data = [
+      [1, 0, 2],
+      [0, 1, 0],
+    ];
+    const neighbors = [[1], [0], []];
+
+    await expect(localBiJoinCount({ data, neighbors, permutation: 99 })).rejects.toThrow(
+      'not binary'
+    );
+  });
+
+  it('should reject mismatched data and observation lengths', async () => {
+    const data = [
+      [1, 0, 1],
+      [0, 1],
+    ];
+    const neighbors = [[1], [0], []];
+
+    await expect(localBiJoinCount({ data, neighbors, permutation: 99 })).rejects.toThrow(
+      'does not match the number of observations'
+    );
+  });
 });
