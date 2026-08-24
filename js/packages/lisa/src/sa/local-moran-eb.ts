@@ -34,7 +34,7 @@ export type LocalMoranEBResult = {
  * @property {number[] | Float32Array} eventData - Event (numerator) counts
  * @property {number[] | Float32Array} baseData - Base (denominator) counts
  * @property {number[][]} neighbors - Spatial weights matrix as adjacency list
- * @property {number} permutation - Number of permutations for significance testing
+ * @property {number} [permutation=999] - Number of permutations for significance testing
  * @property {number} [significanceCutoff=0.05] - Statistical significance threshold
  * @property {number} [seed=1234567890] - Random seed for reproducibility
  */
@@ -42,7 +42,7 @@ export type LocalMoranEBProps = {
   eventData: number[] | Float32Array;
   baseData: number[] | Float32Array;
   neighbors: number[][];
-  permutation: number;
+  permutation?: number;
   significanceCutoff?: number;
   seed?: number;
 };

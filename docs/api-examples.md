@@ -21,12 +21,12 @@ outline: deep
 
 - [Excess Risk](/api/core/src/functions/excessRisk)
 - [Empirical Bayes](/api/core/src/functions/empiricalBayes)
-- [Spatial Rate](/api/core/src/functions/spatialRate)
+- [Spatial Rate](/api/core/src/functions/spatialRates)
 - [Spatial Empirical Bayes](/api/core/src/functions/spatialEmpiricalBayes)
 
 ### Cartogram
 
-- [Cartogram](/api/core/src/functions/cartogram)
+- [Cartogram](/api/core/src/functions/getCartogram)
 
 
 

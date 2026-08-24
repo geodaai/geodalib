@@ -63,12 +63,12 @@ TEST(LISA, LOCAL_MORAN_EB_JS_DATA) {
   EXPECT_NEAR(result.lag_vec[3], 0.9156425120256456, 1e-9);
   EXPECT_NEAR(result.lag_vec[4], 0.9473554162403955, 1e-9);
   EXPECT_NEAR(result.lag_vec[5], 0.5218620897544903, 1e-9);
-  EXPECT_NEAR(result.sig_local_vec[0], 0.28, 1e-9);
-  EXPECT_NEAR(result.sig_local_vec[1], 0.15, 1e-9);
+  EXPECT_NEAR(result.sig_local_vec[0], 0.41, 1e-9);
+  EXPECT_NEAR(result.sig_local_vec[1], 0.41, 1e-9);
   EXPECT_NEAR(result.sig_local_vec[2], 0.0, 1e-9);
-  EXPECT_NEAR(result.sig_local_vec[3], 0.14, 1e-9);
-  EXPECT_NEAR(result.sig_local_vec[4], 0.16, 1e-9);
-  EXPECT_NEAR(result.sig_local_vec[5], 0.23, 1e-9);
+  EXPECT_NEAR(result.sig_local_vec[3], 0.06, 1e-9);
+  EXPECT_NEAR(result.sig_local_vec[4], 0.06, 1e-9);
+  EXPECT_NEAR(result.sig_local_vec[5], 0.06, 1e-9);
   EXPECT_EQ(result.cluster_vec[0], 0);
   EXPECT_EQ(result.cluster_vec[1], 0);
   EXPECT_EQ(result.cluster_vec[2], 6);

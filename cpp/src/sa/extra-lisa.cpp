@@ -18,9 +18,12 @@ std::vector<double> eb_rate_standardize(const std::vector<double>& P, const std:
   std::vector<double> results(obs, 0.0);
   std::vector<double> p(obs, 0.0);
 
+  // A missing or shorter undefs vector means every observation is valid; only
+  // a full-length undefs vector is authoritative, matching local_moran_eb().
+  const bool has_undefs = undefs.size() == obs;
   double sP = 0.0, sE = 0.0;
   for (size_t i = 0; i < obs; i++) {
-    if (i < undefs.size() && undefs[i] == 1) continue;
+    if (has_undefs && undefs[i] == 1) continue;
     if (P[i] == 0.0) {
       p[i] = 0.0;
     } else {
@@ -37,9 +40,8 @@ std::vector<double> eb_rate_standardize(const std::vector<double>& P, const std:
   double obs_valid = 0.0;
   double gamma = 0.0;
   for (size_t i = 0; i < obs; i++) {
-    // an observation is undefined only when a flag exists and is set; a missing
-    // or shorter undefs vector means every observation is valid
-    if (i >= undefs.size() || undefs[i] == 0) {
+    // an observation is undefined only when a full-length undefs flag is set
+    if (!has_undefs || undefs[i] == 0) {
       gamma += P[i] * ((p[i] - b_hat) * (p[i] - b_hat));
       obs_valid += 1.0;
     }
@@ -49,7 +51,7 @@ std::vector<double> eb_rate_standardize(const std::vector<double>& P, const std:
   const double a_hat = a > 0 ? a : 0.0;
 
   for (size_t i = 0; i < obs; i++) {
-    if (i >= undefs.size() || undefs[i] == 0) {
+    if (!has_undefs || undefs[i] == 0) {
       const double se = P[i] > 0 ? sqrt(a_hat + b_hat / P[i]) : 0.0;
       results[i] = se > 0 ? (p[i] - b_hat) / se : 0.0;
     }
@@ -81,7 +83,9 @@ geoda::LisaResult geoda::local_moran_eb(const std::vector<double>& event_data,
   }
 
   int nCPUs = 1;
-  std::string perm_method = "complete";
+  // Use the same permutation path as local_moran() (avoids per-observation
+  // permutation generation and is much faster for large N/perm, especially in WASM).
+  std::string perm_method = "LookupTable";
   GeoDaWeight* w = new VectorWeight(neighbors);
 
   UniLocalMoran* lisa =
