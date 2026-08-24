@@ -1,6 +1,8 @@
 set (WEIGHTS_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/geometry/geometry.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/weights/distance-weights.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/weights/kernel-knn-weights.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/weights/kernel-weights.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/weights/contiguity-weights.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/weights/geoda-weight.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/weights/vector-weight.cpp
@@ -45,6 +47,7 @@ set (LISA_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/lisa/BiLocalMoran.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/lisa/UniG.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/lisa/UniJoinCount.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/lisa/MultiJoinCount.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/lisa/UniGstar.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/lisa/UniGeary.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/lisa/MultiGeary.cpp

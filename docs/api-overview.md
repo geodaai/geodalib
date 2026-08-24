@@ -22,14 +22,12 @@ outline: deep
 
 - [Excess Risk](/api/core/src/functions/excessRisk)
 - [Empirical Bayes](/api/core/src/functions/empiricalBayes)
-- [Spatial Rate](/api/core/src/functions/spatialRates)
+- [Spatial Rate](/api/core/src/functions/spatialRate)
 - [Spatial Empirical Bayes](/api/core/src/functions/spatialEmpiricalBayes)
 
 ### Cartogram
 
 - [Cartogram](/api/core/src/functions/getCartogram)
-- [Thiessen Polygons](/api/core/src/functions/getThiessenPolygons)
-- [Minimum Spanning Tree](/api/core/src/functions/getMinimumSpanningTree)
 
 
 
@@ -61,8 +59,8 @@ outline: deep
 
 ### Kernel Weights
 
-- Kernel Weights
-- Kernel K-Nearest Neighbors Weights
+- [Kernel Weights](/api/core/src/functions/getKernelWeightsFromBinaryGeometries)
+- [Kernel K-Nearest Neighbors Weights](/api/core/src/functions/getKernelKnnWeightsFromBinaryGeometries)
 
 
 
@@ -81,7 +79,8 @@ outline: deep
 - [Local Getis-Ord G*](/api/lisa/src/functions/localGStar)
 - [Local Geary's C](/api/lisa/src/functions/localGeary)
 - [Multivariate Local Geary's C](/api/lisa/src/functions/multivariateLocalGeary)
-- Local Join Count
+- [Local Join Count](/api/lisa/src/functions/localJoinCount)
+- [Multivariate Local Join Count](/api/lisa/src/functions/multivariateLocalJoinCount)
 - [Quantile LISA](/api/lisa/src/functions/quantileLisa)
 - [Spatial Lag](/api/lisa/src/functions/spatialLag)
 - [Spatial Lag Median](/api/lisa/src/functions/spatialLagMedian)
@@ -133,6 +132,9 @@ outline: deep
 
 - [Centroid](/api/core/src/functions/getCentroids)
 - [Buffer](/api/core/src/functions/getBuffers)
+- [Area](/api/core/src/functions/getArea)
+- [Length](/api/core/src/functions/getLength)
+- [Perimeter](/api/core/src/functions/getPerimeter)
 - [Spatial Dissolve](/api/core/src/functions/spatialDissolve)
 - [Spatial Join](/api/core/src/functions/spatialJoin)
 

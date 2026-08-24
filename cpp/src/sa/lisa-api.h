@@ -77,6 +77,16 @@ LisaResult local_moran_eb(const std::vector<double>& event_data, const std::vect
                           const std::vector<unsigned int>& undefs, double significance_cutoff, unsigned int perm,
                           int last_seed);
 
+LisaResult local_joincount(const std::vector<double>& data,
+                           const std::vector<std::vector<unsigned int>>& neighbors,
+                           const std::vector<unsigned int>& undefs, double significance_cutoff, unsigned int perm,
+                           int last_seed);
+
+LisaResult local_multijoincount(const std::vector<std::vector<double>>& data,
+                                const std::vector<std::vector<unsigned int>>& neighbors,
+                                const std::vector<std::vector<unsigned int>>& undefs, double significance_cutoff,
+                                unsigned int perm, int last_seed);
+
 LisaResult quantile_lisa(int k, int quantile, const std::vector<double>& data,
                          const std::vector<std::vector<unsigned int>>& neighbors,
                          const std::vector<unsigned int>& undefs, double significance_cutoff, unsigned int perm,
