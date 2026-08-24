@@ -39,10 +39,10 @@ geoda::BatchLisaResult geoda::batch_local_moran(const std::vector<std::vector<do
       new BatchLocalMoran(static_cast<int>(num_obs), w, data, copy_undefs, significance_cutoff, nCPUs,
                           static_cast<int>(perm), static_cast<uint64_t>(last_seed));
 
-  if (lisa) {
-    set_batch_lisa_content(lisa, result, data.size());
-    delete lisa;
-  }
+  // new() throws on failure; lisa is never null here, so fill the result and
+  // release it unconditionally.
+  set_batch_lisa_content(lisa, result, data.size());
+  delete lisa;
 
   delete w;
 

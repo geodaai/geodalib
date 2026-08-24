@@ -131,58 +131,80 @@ export async function batchLocalMoran({
   }
 
   const wasmData = new wasm.VecVecDouble();
-  for (const varData of data) {
-    const wasmVar = new wasm.VectorDouble();
-    wasmVar.resize(n, 0);
-    for (let i = 0; i < n; ++i) wasmVar.set(i, Number(varData[i]));
-    wasmData.push_back(wasmVar);
-  }
-
   const wasmNeighbors = new wasm.VecVecUInt();
-  for (let i = 0; i < n; ++i) {
-    const nbrs = neighbors[i] ?? [];
-    const wNbrs = new wasm.VectorUInt();
-    for (let j = 0; j < nbrs.length; ++j) wNbrs.push_back(nbrs[j]);
-    wasmNeighbors.push_back(wNbrs);
-  }
-
   const wasmUndefs = new wasm.VecVecUInt();
-  for (let v = 0; v < data.length; ++v) {
-    const undef = new wasm.VectorUInt();
-    undef.resize(n, 0);
-    wasmUndefs.push_back(undef);
+  try {
+    for (const varData of data) {
+      const wasmVar = new wasm.VectorDouble();
+      try {
+        wasmVar.resize(n, 0);
+        for (let i = 0; i < n; ++i) wasmVar.set(i, Number(varData[i]));
+        wasmData.push_back(wasmVar);
+      } finally {
+        // push_back copies the data into wasmData; the JS handle is a separate
+        // heap object that must be released to avoid WASM memory growth.
+        wasmVar.delete();
+      }
+    }
+
+    for (let i = 0; i < n; ++i) {
+      const nbrs = neighbors[i] ?? [];
+      const wNbrs = new wasm.VectorUInt();
+      try {
+        for (let j = 0; j < nbrs.length; ++j) wNbrs.push_back(nbrs[j]);
+        wasmNeighbors.push_back(wNbrs);
+      } finally {
+        wNbrs.delete();
+      }
+    }
+
+    for (let v = 0; v < data.length; ++v) {
+      const undef = new wasm.VectorUInt();
+      try {
+        undef.resize(n, 0);
+        wasmUndefs.push_back(undef);
+      } finally {
+        undef.delete();
+      }
+    }
+
+    const result = wasm.batchLocalMoran(
+      wasmData,
+      wasmNeighbors,
+      wasmUndefs,
+      significanceCutoff,
+      permutation,
+      seed
+    );
+
+    const isValid = result.isValid();
+    const lisaValues = vecVecDoubleToNumber(result.getLisaValues());
+    const pValues = vecVecDoubleToNumber(result.getPValues());
+    const clusters = vecVecIntToNumber(result.getClusters());
+    const lagValues = vecVecDoubleToNumber(result.getLagValues());
+    const nn = ownedVecIntToNumber(result.getNN());
+    const labels = ownedVecStringArray(result.getLabels());
+    const colors = ownedVecStringArray(result.getColors());
+    // BatchLisaResult owns the vectors behind the getters above; by the time we
+    // reach here all of them have been converted to JS arrays and released, so
+    // it is safe to release the result object itself.
+    result.delete();
+
+    return {
+      isValid,
+      lisaValues,
+      pValues,
+      clusters,
+      lagValues,
+      nn,
+      labels,
+      colors,
+    };
+  } finally {
+    // Release the outer embind heap objects now that their contents have been
+    // copied into the result and converted to JS arrays.
+    wasmData.delete();
+    wasmNeighbors.delete();
+    wasmUndefs.delete();
   }
-
-  const result = wasm.batchLocalMoran(
-    wasmData,
-    wasmNeighbors,
-    wasmUndefs,
-    significanceCutoff,
-    permutation,
-    seed
-  );
-
-  const isValid = result.isValid();
-  const lisaValues = vecVecDoubleToNumber(result.getLisaValues());
-  const pValues = vecVecDoubleToNumber(result.getPValues());
-  const clusters = vecVecIntToNumber(result.getClusters());
-  const lagValues = vecVecDoubleToNumber(result.getLagValues());
-  const nn = ownedVecIntToNumber(result.getNN());
-  const labels = ownedVecStringArray(result.getLabels());
-  const colors = ownedVecStringArray(result.getColors());
-  // BatchLisaResult owns the vectors behind the getters above; by the time we
-  // reach here all of them have been converted to JS arrays and released, so
-  // it is safe to release the result object itself.
-  result.delete();
-
-  return {
-    isValid,
-    lisaValues,
-    pValues,
-    clusters,
-    lagValues,
-    nn,
-    labels,
-    colors,
-  };
 }

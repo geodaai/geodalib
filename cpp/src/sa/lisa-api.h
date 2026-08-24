@@ -28,15 +28,15 @@ struct LisaResult {
   std::vector<std::string> labels;
   std::vector<std::string> colors;
 
-  bool get_is_valid() { return is_valid; }
-  std::vector<double> get_sig_local() { return sig_local_vec; }
-  std::vector<int> get_sig_cat() { return sig_cat_vec; }
-  std::vector<int> get_cluster() { return cluster_vec; }
-  std::vector<double> get_lag() { return lag_vec; }
-  std::vector<double> get_lisa() { return lisa_vec; }
-  std::vector<int> get_nn() { return nn_vec; }
-  std::vector<std::string> get_labels() { return labels; }
-  std::vector<std::string> get_colors() { return colors; }
+  bool get_is_valid() const { return is_valid; }
+  std::vector<double> get_sig_local() const { return sig_local_vec; }
+  std::vector<int> get_sig_cat() const { return sig_cat_vec; }
+  std::vector<int> get_cluster() const { return cluster_vec; }
+  std::vector<double> get_lag() const { return lag_vec; }
+  std::vector<double> get_lisa() const { return lisa_vec; }
+  std::vector<int> get_nn() const { return nn_vec; }
+  std::vector<std::string> get_labels() const { return labels; }
+  std::vector<std::string> get_colors() const { return colors; }
 };
 
 static void set_lisa_content(LISA* lisa, LisaResult& rst) {
@@ -61,14 +61,14 @@ struct BatchLisaResult {
   std::vector<std::string> labels;
   std::vector<std::string> colors;
 
-  bool get_is_valid() { return is_valid; }
-  std::vector<std::vector<double>> get_lisa_values() { return lisa_values; }
-  std::vector<std::vector<double>> get_sig_values() { return sig_values; }
-  std::vector<std::vector<int>> get_cluster_values() { return cluster_values; }
-  std::vector<std::vector<double>> get_lag_values() { return lag_values; }
-  std::vector<int> get_nn() { return nn; }
-  std::vector<std::string> get_labels() { return labels; }
-  std::vector<std::string> get_colors() { return colors; }
+  bool get_is_valid() const { return is_valid; }
+  std::vector<std::vector<double>> get_lisa_values() const { return lisa_values; }
+  std::vector<std::vector<double>> get_sig_values() const { return sig_values; }
+  std::vector<std::vector<int>> get_cluster_values() const { return cluster_values; }
+  std::vector<std::vector<double>> get_lag_values() const { return lag_values; }
+  std::vector<int> get_nn() const { return nn; }
+  std::vector<std::string> get_labels() const { return labels; }
+  std::vector<std::string> get_colors() const { return colors; }
 };
 
 static void set_batch_lisa_content(BatchLISA* lisa, BatchLisaResult& rst, size_t num_vars) {
