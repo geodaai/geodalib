@@ -18,12 +18,15 @@ static std::vector<std::vector<bool>> to_bool_undefs(const std::vector<std::vect
                                                      size_t num_vars, size_t num_obs) {
   std::vector<std::vector<bool>> copy_undefs(num_vars);
   for (size_t i = 0; i < num_vars; ++i) {
-    copy_undefs[i].resize(num_obs, false);
-    if (i < undefs.size()) {
-      size_t row_len = std::min(undefs[i].size(), num_obs);
-      for (size_t j = 0; j < row_len; ++j) {
-        copy_undefs[i][j] = undefs[i][j] == 1;
-      }
+    // Keep rows sparse: a variable with no undef row stays empty (size 0) rather
+    // than being zero-filled to num_obs. The LISA constructors merge per-variable
+    // flags by iterating only the entries that exist (LISA.cpp:110), so missing
+    // entries stay false and short rows are fully tolerated.
+    if (i >= undefs.size()) continue;
+    size_t row_len = std::min(undefs[i].size(), num_obs);
+    copy_undefs[i].resize(row_len);
+    for (size_t j = 0; j < row_len; ++j) {
+      copy_undefs[i][j] = undefs[i][j] == 1;
     }
   }
   return copy_undefs;
@@ -66,10 +69,13 @@ geoda::LisaResult geoda::local_multiquantilelisa(const std::vector<int>& k_s, co
       return result;
     }
     // Consult existing entries only; missing entries stay undefined-free so a
-    // shorter row still contributes the flags it does carry.
-    std::vector<unsigned int> undef_i(num_obs, 0);
+    // shorter row still contributes the flags it does carry. Keep the vector
+    // sparse (sized to the row, empty when the variable has no undef row):
+    // quantile_breaks only consults _undef.size() entries when it is non-zero.
+    std::vector<unsigned int> undef_i;
     if (i < undefs.size()) {
       size_t row_len = std::min(undefs[i].size(), num_obs);
+      undef_i.resize(row_len);
       for (size_t j = 0; j < row_len; ++j) {
         undef_i[j] = undefs[i][j];
       }
