@@ -274,6 +274,42 @@ TEST(LISA, MULTIVARIATE_JOIN_COUNT_COMPLEMENTARY_SUM_NOT_PAIRS) {
   EXPECT_DOUBLE_EQ(result.lisa_vec[3], 0.0);
 }
 
+TEST(LISA, LOCAL_JOIN_COUNT_SELF_NEIGHBOR_FILTERED) {
+  // obs 0 lists itself as a neighbor ({0, 1}). The join-count loops skip self,
+  // but VectorWeight::GetNbrStats excludes self while GetNbrSize includes it,
+  // so a self entry would make the lookup-table permutation too small and read
+  // past it. The wrapper filters self-loops out of the compacted adjacency list.
+  std::vector<double> data = {1, 1, 0};
+  std::vector<unsigned int> undefs = {0, 0, 0};
+  std::vector<std::vector<unsigned int>> nbrs = {{0, 1}, {0, 2}, {1}};
+
+  geoda::LisaResult result = geoda::local_joincount(data, nbrs, undefs, 0.05, 99, 12345);
+
+  EXPECT_TRUE(result.is_valid);
+  ASSERT_EQ(result.lisa_vec.size(), 3u);
+  EXPECT_DOUBLE_EQ(result.lisa_vec[0], 1.0);
+  EXPECT_DOUBLE_EQ(result.lisa_vec[1], 1.0);
+  EXPECT_DOUBLE_EQ(result.lisa_vec[2], 0.0);
+}
+
+TEST(LISA, LOCAL_JOIN_COUNT_DUPLICATE_NEIGHBOR_FILTERED) {
+  // obs 0 lists neighbor 1 twice ({1, 1}). A weights adjacency list should not
+  // contain duplicates, and duplicate-heavy rows can make the permutation-table
+  // sampler loop forever drawing unique candidates it cannot produce. The
+  // wrapper deduplicates so each neighbor contributes once to the join count.
+  std::vector<double> data = {1, 1, 0};
+  std::vector<unsigned int> undefs = {0, 0, 0};
+  std::vector<std::vector<unsigned int>> nbrs = {{1, 1}, {0, 2}, {1}};
+
+  geoda::LisaResult result = geoda::local_joincount(data, nbrs, undefs, 0.05, 99, 12345);
+
+  EXPECT_TRUE(result.is_valid);
+  ASSERT_EQ(result.lisa_vec.size(), 3u);
+  EXPECT_DOUBLE_EQ(result.lisa_vec[0], 1.0);
+  EXPECT_DOUBLE_EQ(result.lisa_vec[1], 1.0);
+  EXPECT_DOUBLE_EQ(result.lisa_vec[2], 0.0);
+}
+
 TEST(LISA, LOCAL_JOIN_COUNT_DATA_LENGTH_MISMATCH) {
   // data shorter than the neighbor list would read past the buffer during
   // compaction; the wrapper rejects it.

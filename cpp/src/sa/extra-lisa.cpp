@@ -57,9 +57,22 @@ static bool compact_neighbors(const std::vector<std::vector<unsigned int>>& neig
     const std::vector<unsigned int>& nbrs = neighbors[i];
     for (unsigned int nb : nbrs) {
       unsigned int comp_nb = orig_to_comp[nb];
-      if (comp_nb != kUndefined) {
-        comp_nbrs[c].push_back(comp_nb);
+      // Drop undefined neighbors, self-loops, and duplicates. The join-count
+      // loops skip self, but VectorWeight::GetNbrStats excludes self while
+      // GetNbrSize includes it, so a self entry would make the lookup-table
+      // permutation too small and read past it; duplicate-heavy rows can make
+      // the permutation sampler loop forever drawing unique candidates it cannot
+      // produce. A weights adjacency list should contain neither, so filter both
+      // rather than propagate them.
+      if (comp_nb == kUndefined || comp_nb == c) continue;
+      bool seen = false;
+      for (size_t k = 0; k < comp_nbrs[c].size(); ++k) {
+        if (comp_nbrs[c][k] == comp_nb) {
+          seen = true;
+          break;
+        }
       }
+      if (!seen) comp_nbrs[c].push_back(comp_nb);
     }
   }
   return true;

@@ -4,7 +4,7 @@
 
 > **MultivariateLocalJoinCountProps**: `object`
 
-Defined in: lisa/src/sa/local-joincount.ts:122
+Defined in: lisa/src/sa/local-joincount.ts:135
 
 Configuration properties for Multivariate Local Join Count calculation.
 

@@ -4,7 +4,7 @@
 
 > **multivariateLocalJoinCount**(`props`): `Promise`\<[`LocalJoinCountResult`](../type-aliases/LocalJoinCountResult.md)\>
 
-Defined in: lisa/src/sa/local-joincount.ts:136
+Defined in: lisa/src/sa/local-joincount.ts:149
 
 Calculates Multivariate Local Join Count statistics for multiple binary variables.
 
