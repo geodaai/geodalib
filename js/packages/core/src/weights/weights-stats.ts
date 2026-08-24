@@ -12,7 +12,7 @@ export type WeightsMeta = {
   /**
    * The type of the weights
    */
-  type?: 'knn' | 'threshold' | 'queen' | 'rook';
+  type?: 'knn' | 'threshold' | 'queen' | 'rook' | 'kernel';
   /**
    * The symmetry of the weights
    */
@@ -57,6 +57,18 @@ export type WeightsMeta = {
    * The threshold for the weights
    */
   threshold?: number;
+  /**
+   * The bandwidth for kernel weights
+   */
+  bandwidth?: number;
+  /**
+   * The kernel function for kernel weights
+   */
+  kernel?: string;
+  /**
+   * The power (or exponent) applied to the distance before normalizing by the bandwidth
+   */
+  power?: number;
   /**
    * Whether the distance is in miles
    */

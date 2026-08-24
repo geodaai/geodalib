@@ -3,6 +3,7 @@
 
 #ifndef GEODA_DISTANCE_WEIGHTS_H
 #define GEODA_DISTANCE_WEIGHTS_H
+#include <string>
 #include <vector>
 
 #include "geometry/geometry.h"
@@ -38,6 +39,28 @@ double haversine_distance(double lon1, double lat1, double lon2, double lat2, bo
  */
 std::vector<std::vector<double>> distance_weights(const GeometryCollection& geoms, double distance_threshold,
                                                   bool is_mile);
+
+/**
+ * @brief Compute kernel weights for a collection of geometries using a fixed bandwidth.
+ *
+ * For each geometry, neighbors located within the given bandwidth are found. Each neighbor's
+ * weight is computed by applying the chosen kernel to the distance ratio z = distance^power / bandwidth,
+ * following Anselin and Rey (2010), table 5.4. Supported kernels: triangular, uniform, epanechnikov,
+ * quartic and gaussian. Each row is stored as an interleaved list of [neighborIndex, weight] pairs,
+ * with the diagonal (self) element appended last.
+ *
+ * @param geoms The geometry collection. If the collection is not a point collection, the centroids of
+ * the geometries are used.
+ * @param bandwidth The fixed bandwidth (in kilometers or miles) within which neighbors are considered.
+ * @param kernel The kernel function to apply. One of: triangular, uniform, epanechnikov, quartic, gaussian.
+ * @param is_mile If true, use mile as the distance unit, otherwise use kilometer.
+ * @param use_kernel_diagonals If true, the diagonal (self) weight is kernel(1.0); otherwise it is 1.0.
+ * @param power The power (or exponent) applied to the distance before normalizing by the bandwidth.
+ * @return std::vector<std::vector<double>> The 2D vector of kernel weights as [neighborIndex, weight] pairs.
+ */
+std::vector<std::vector<double>> kernel_weights(const GeometryCollection& geoms, double bandwidth,
+                                                const std::string& kernel, bool is_mile,
+                                                bool use_kernel_diagonals = false, double power = 1.0);
 
 /**
  * @brief Get the distance thresholds, first threshold guarantee that each observation has at least one neighbor, and
@@ -78,6 +101,34 @@ std::vector<std::vector<double>> neighbor_match_test(const GeometryCollection& g
                                                      const std::vector<std::vector<double>>& data,
                                                      const std::string& scale_method, const std::string& dist_type,
                                                      bool is_mile);
+
+/**
+ * @brief Compute kernel weights for a collection of geometries using k-nearest neighbors.
+ *
+ * For each geometry, the k nearest neighbors are found. When adaptive_bandwidth is true, the
+ * bandwidth for each observation is the distance to its k-th nearest neighbor; otherwise a single
+ * global bandwidth (the maximum of all k-th nearest neighbor distances) is used. Each neighbor's
+ * weight is computed by applying the chosen kernel to the distance ratio z = distance / bandwidth
+ * (or z = (1 / distance^power) / bandwidth when is_inverse is true), following Anselin and Rey
+ * (2010), table 5.4. Each row is stored as an interleaved list of [neighborIndex, weight] pairs,
+ * with the diagonal (self) element appended last.
+ *
+ * @param geoms The geometry collection. If the collection is not a point collection, the centroids of
+ * the geometries are used.
+ * @param k The number of nearest neighbors.
+ * @param kernel The kernel function to apply. One of: triangular, uniform, epanechnikov, quartic, gaussian.
+ * @param is_mile If true, use mile as the distance unit, otherwise use kilometer.
+ * @param use_kernel_diagonals If true, the diagonal (self) weight is kernel(0.0); otherwise it is 1.0.
+ * @param power The power (or exponent) used by the inverse distance weighting (1 / distance^power).
+ * @param adaptive_bandwidth If true, use the k-th nearest neighbor distance of each observation as its
+ * bandwidth; otherwise use the global maximum k-th nearest neighbor distance.
+ * @param is_inverse If true, apply the inverse distance weighting (1 / distance^power) before the kernel.
+ * @return std::vector<std::vector<double>> The 2D vector of kernel weights as [neighborIndex, weight] pairs.
+ */
+std::vector<std::vector<double>> kernel_knn_weights(const GeometryCollection& geoms, unsigned int k,
+                                                    const std::string& kernel, bool is_mile,
+                                                    bool use_kernel_diagonals = false, double power = 1.0,
+                                                    bool adaptive_bandwidth = true, bool is_inverse = false);
 
 /**
  * @brief  Compute contiguity weights for a collection of geometries using the centroids of the geometries.

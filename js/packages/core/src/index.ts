@@ -8,6 +8,8 @@ export * from './init';
 
 export * from './weights/distance-neighbors';
 export * from './weights/neighbor-match-test';
+export * from './weights/kernel-knn-weights';
+export * from './weights/kernel-weights';
 export * from './weights/nearest-neighbors';
 export * from './weights/contiguity-neighbors';
 export * from './weights/weights-stats';
