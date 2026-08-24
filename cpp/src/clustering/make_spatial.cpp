@@ -37,7 +37,10 @@ MakeSpatialComponent::MakeSpatialComponent(int cid, const std::vector<int>& elem
 
 MakeSpatialComponent::~MakeSpatialComponent() {}
 
-bool MakeSpatialComponent::Has(int eid) { return elements_dict[eid]; }
+bool MakeSpatialComponent::Has(int eid) {
+  std::map<int, bool>::const_iterator it = elements_dict.find(eid);
+  return it != elements_dict.end() && it->second;
+}
 
 void MakeSpatialComponent::Merge(MakeSpatialComponent* comp) {
   std::vector<int> new_elements = comp->GetElements();
@@ -170,12 +173,13 @@ void MakeSpatialCluster::MergeComponent(MakeSpatialComponent* from, MakeSpatialC
 }
 
 void MakeSpatialCluster::RemoveComponent(MakeSpatialComponent* comp) {
-  if (comp->GetClusterId() != this->cid) {
-    std::vector<int> removed_elements = comp->GetElements();
-    for (size_t i = 0; i < removed_elements.size(); ++i) {
-      int eid = removed_elements[i];
-      component_dict.erase(eid);
-    }
+  // Erase the removed elements unconditionally: the component's cluster id is
+  // never updated before removal, so keeping the erase behind a cid check left
+  // dangling pointers in component_dict after the component was deleted.
+  std::vector<int> removed_elements = comp->GetElements();
+  for (size_t i = 0; i < removed_elements.size(); ++i) {
+    int eid = removed_elements[i];
+    component_dict.erase(eid);
   }
 
   for (size_t i = 0; i < components.size(); ++i) {

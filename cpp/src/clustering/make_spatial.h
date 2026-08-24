@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 // Copyright contributors to the geodalib project
 
-#ifndef GEODA_CENTER_SPATIAL_KMEANS_H__
-#define GEODA_CENTER_SPATIAL_KMEANS_H__
+#ifndef GEODA_CLUSTERING_MAKE_SPATIAL_H
+#define GEODA_CLUSTERING_MAKE_SPATIAL_H
 
 #include <map>
 #include <vector>
