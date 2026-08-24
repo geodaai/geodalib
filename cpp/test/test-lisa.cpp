@@ -20,3 +20,40 @@ TEST(LISA, MULTIVARIATE_QUANTILE_LISA) {
   EXPECT_TRUE(result.is_valid);
   EXPECT_EQ(result.lisa_vec.size(), 3u);
 }
+
+TEST(LISA, MULTIVARIATE_QUANTILE_LISA_INVALID_INPUTS) {
+  std::vector<std::vector<unsigned int>> undefs = {{0, 0, 0}, {0, 0, 0}};
+
+  // mismatched k/quantile/data variable counts
+  geoda::LisaResult result = geoda::local_multiquantilelisa({4}, {1, 2}, {{1, 2, 3}, {3, 2, 1}}, TEST_NEIGHBORS,
+                                                            undefs, 0.05, 99, 12345);
+  EXPECT_FALSE(result.is_valid);
+
+  // empty data
+  result = geoda::local_multiquantilelisa({4, 4}, {1, 2}, {}, TEST_NEIGHBORS, undefs, 0.05, 99, 12345);
+  EXPECT_FALSE(result.is_valid);
+
+  // neighbors count does not match observations
+  std::vector<std::vector<unsigned int>> nbrs2 = {{1}, {0, 2}};
+  result = geoda::local_multiquantilelisa({4, 4}, {1, 2}, {{1, 2, 3}, {3, 2, 1}}, nbrs2, undefs, 0.05, 99, 12345);
+  EXPECT_FALSE(result.is_valid);
+
+  // variable lengths do not match
+  result = geoda::local_multiquantilelisa({4, 4}, {1, 2}, {{1, 2, 3}, {3, 2}}, TEST_NEIGHBORS, undefs, 0.05, 99, 12345);
+  EXPECT_FALSE(result.is_valid);
+
+  // k < 2
+  result = geoda::local_multiquantilelisa({1, 4}, {1, 2}, {{1, 2, 3}, {3, 2, 1}}, TEST_NEIGHBORS, undefs, 0.05, 99,
+                                          12345);
+  EXPECT_FALSE(result.is_valid);
+
+  // q < 1
+  result = geoda::local_multiquantilelisa({4, 4}, {0, 2}, {{1, 2, 3}, {3, 2, 1}}, TEST_NEIGHBORS, undefs, 0.05, 99,
+                                          12345);
+  EXPECT_FALSE(result.is_valid);
+
+  // q > k
+  result = geoda::local_multiquantilelisa({4, 4}, {1, 5}, {{1, 2, 3}, {3, 2, 1}}, TEST_NEIGHBORS, undefs, 0.05, 99,
+                                          12345);
+  EXPECT_FALSE(result.is_valid);
+}

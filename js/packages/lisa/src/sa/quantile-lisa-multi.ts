@@ -40,7 +40,7 @@ export type MultivariateQuantileLisaProps = {
  * Calculates Multivariate Local Quantile LISA statistics.
  *
  * @param {MultivariateQuantileLisaProps} props - Configuration object
- * @returns {Promise<LocalQuantileLisarResult>} Promise resolving to quantile LISA statistics
+ * @returns {Promise<MultivariateQuantileLisaResult>} Promise resolving to quantile LISA statistics
  */
 export async function multivariateQuantileLisa({
   kValues,
@@ -54,6 +54,26 @@ export async function multivariateQuantileLisa({
   const wasm = await initWASM();
 
   const n = neighbors.length;
+  const numVars = data.length;
+
+  if (n === 0) {
+    throw new Error('multivariateQuantileLisa: neighbors must contain at least one observation');
+  }
+  if (numVars === 0) {
+    throw new Error('multivariateQuantileLisa: data must contain at least one variable');
+  }
+  if (kValues.length !== numVars || quantileValues.length !== numVars) {
+    throw new Error(
+      'multivariateQuantileLisa: kValues and quantileValues must have the same length as data'
+    );
+  }
+  for (let v = 0; v < numVars; ++v) {
+    if (data[v].length !== n) {
+      throw new Error(
+        `multivariateQuantileLisa: data variable ${v} has ${data[v].length} values, expected ${n}`
+      );
+    }
+  }
   const wasmK = new wasm.VectorInt();
   wasmK.resize(kValues.length, 0);
   for (let i = 0; i < kValues.length; ++i) wasmK.set(i, kValues[i]);

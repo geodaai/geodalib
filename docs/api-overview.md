@@ -27,8 +27,8 @@ outline: deep
 
 ### Cartogram
 
-- [Cartogram](/api/core/src/functions/cartogram)
-- [Thiessen Polygons](/api/core/src/functions/thiessenPolygons)
+- [Cartogram](/api/core/src/functions/getCartogram)
+- [Thiessen Polygons](/api/core/src/functions/getThiessenPolygons)
 - [Minimum Spanning Tree](/api/core/src/functions/getMinimumSpanningTree)
 
 
@@ -138,7 +138,7 @@ outline: deep
 
 ### Other Operations
 
-- [Thiessen Polygons](/api/core/src/functions/thiessenPolygons)
+- [Thiessen Polygons](/api/core/src/functions/getThiessenPolygons)
 - [Minimum Spanning Tree](/api/core/src/functions/getMinimumSpanningTree)
 
 

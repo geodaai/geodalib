@@ -35,8 +35,16 @@ geoda::LisaResult geoda::local_multiquantilelisa(const std::vector<int>& k_s, co
 
   size_t num_obs = 0;
   if (!data.empty()) num_obs = data[0].size();
-  if (k_s.size() != quantile_s.size() || k_s.size() != data.size()) {
+  if (k_s.size() != quantile_s.size() || k_s.size() != data.size() || num_obs == 0) {
     return result;
+  }
+  if (neighbors.size() != num_obs) {
+    return result;
+  }
+  for (size_t i = 0; i < data.size(); ++i) {
+    if (data[i].size() != num_obs) {
+      return result;
+    }
   }
 
   size_t num_vars = k_s.size();
@@ -47,6 +55,9 @@ geoda::LisaResult geoda::local_multiquantilelisa(const std::vector<int>& k_s, co
   for (size_t i = 0; i < num_vars; ++i) {
     int k = k_s[i];
     int q = quantile_s[i];
+    if (k < 2 || q < 1 || q > k) {
+      return result;
+    }
     std::vector<unsigned int> undef_i = (i < undefs.size()) ? undefs[i] : std::vector<unsigned int>(num_obs, 0);
 
     std::vector<double> breaks = geoda::quantile_breaks(k, data[i], undef_i);

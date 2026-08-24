@@ -46,4 +46,52 @@ describe('multivariateQuantileLisa()', () => {
 
     expect(result.isValid).toBe(true);
   });
+
+  it('should reject mismatched variable lengths', async () => {
+    const data = [
+      [1, 2, 3, 4, 5, 6],
+      [6, 5, 4, 3, 2],
+    ];
+    const neighbors = [[1], [0, 2], [1, 3], [2, 4], [3, 5], [4]];
+    const kValues = [4, 4];
+    const quantileValues = [1, 2];
+
+    await expect(
+      multivariateQuantileLisa({ kValues, quantileValues, data, neighbors, permutation: 99 })
+    ).rejects.toThrow(/data variable 1/);
+  });
+
+  it('should reject k/quantile arrays that do not match the data variables', async () => {
+    const data = [
+      [1, 2, 3, 4, 5, 6],
+      [6, 5, 4, 3, 2, 1],
+    ];
+    const neighbors = [[1], [0, 2], [1, 3], [2, 4], [3, 5], [4]];
+    const kValues = [4];
+    const quantileValues = [1, 2];
+
+    await expect(
+      multivariateQuantileLisa({ kValues, quantileValues, data, neighbors, permutation: 99 })
+    ).rejects.toThrow(/same length as data/);
+  });
+
+  it('should reject invalid k/quantile values', async () => {
+    const data = [
+      [1, 2, 3, 4, 5, 6],
+      [6, 5, 4, 3, 2, 1],
+    ];
+    const neighbors = [[1], [0, 2], [1, 3], [2, 4], [3, 5], [4]];
+    const kValues = [1, 4];
+    const quantileValues = [1, 2];
+
+    const result = await multivariateQuantileLisa({
+      kValues,
+      quantileValues,
+      data,
+      neighbors,
+      permutation: 99,
+    });
+
+    expect(result.isValid).toBe(false);
+  });
 });
