@@ -52,6 +52,7 @@ EMSCRIPTEN_BINDINGS(wasmgeoda) {
       .function("getColors", &geoda::LisaResult::get_colors);
 
   emscripten::function("localMoran", &geoda::local_moran);
+  emscripten::function("localMoranEB", &geoda::local_moran_eb);
   emscripten::function("localG", &geoda::local_g);
   emscripten::function("bivariateLocalMoran", &geoda::local_bivariate_moran);
   emscripten::function("localGeary", &geoda::local_geary);

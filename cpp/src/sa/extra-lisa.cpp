@@ -1,16 +1,70 @@
 // SPDX-License-Identifier: MIT
 // Copyright contributors to the geodalib project
 
+#include <algorithm>
+#include <cmath>
+#include <limits>
+#include <utility>
+#include <vector>
+
 #include "lisa/MultiJoinCount.h"
 #include "lisa/UniJoinCount.h"
+#include "lisa/UniLocalMoran.h"
 #include "sa/lisa-api.h"
 #include "weights/geoda-weight.h"
 #include "weights/vector-weight.h"
 
-#include <algorithm>
-#include <limits>
-#include <utility>
-#include <vector>
+namespace {
+
+// Empirical Bayes rate standardization (rateStandardizeEB), inlined here so the
+// lisa WASM target does not depend on the mapping/rates module.
+std::vector<double> eb_rate_standardize(const std::vector<double>& P, const std::vector<double>& E,
+                                        const std::vector<unsigned int>& undefs) {
+  size_t obs = P.size();
+  std::vector<double> results(obs, 0.0);
+  std::vector<double> p(obs, 0.0);
+
+  // A missing or shorter undefs vector means every observation is valid; only
+  // a full-length undefs vector is authoritative, matching local_moran_eb().
+  const bool has_undefs = undefs.size() == obs;
+  double sP = 0.0, sE = 0.0;
+  for (size_t i = 0; i < obs; i++) {
+    if (has_undefs && undefs[i] == 1) continue;
+    if (P[i] == 0.0) {
+      p[i] = 0.0;
+    } else {
+      sP += P[i];
+      sE += E[i];
+      p[i] = E[i] / P[i];
+    }
+  }
+
+  if (sP == 0.0) return results;
+
+  const double b_hat = sE / sP;
+
+  double obs_valid = 0.0;
+  double gamma = 0.0;
+  for (size_t i = 0; i < obs; i++) {
+    // an observation is undefined only when a full-length undefs flag is set
+    if (!has_undefs || undefs[i] == 0) {
+      gamma += P[i] * ((p[i] - b_hat) * (p[i] - b_hat));
+      obs_valid += 1.0;
+    }
+  }
+
+  double a = (gamma / sP) - (b_hat / (sP / obs_valid));
+  const double a_hat = a > 0 ? a : 0.0;
+
+  for (size_t i = 0; i < obs; i++) {
+    if (!has_undefs || undefs[i] == 0) {
+      const double se = P[i] > 0 ? sqrt(a_hat + b_hat / P[i]) : 0.0;
+      results[i] = se > 0 ? (p[i] - b_hat) / se : 0.0;
+    }
+  }
+
+  return results;
+}
 
 // Map original observation ids onto a compacted dataset that contains only the
 // defined observations. comp_to_orig[c] gives the original id of compacted id c;
@@ -116,6 +170,48 @@ static void expand_result(geoda::LisaResult& result, size_t num_obs,
   result.lag_vec = std::move(lag);
   result.lisa_vec = std::move(lisa);
   result.nn_vec = std::move(nn);
+}
+
+}  // namespace
+
+geoda::LisaResult geoda::local_moran_eb(const std::vector<double>& event_data,
+                                        const std::vector<double>& base_data,
+                                        const std::vector<std::vector<unsigned int>>& neighbors,
+                                        const std::vector<unsigned int>& undefs, double significance_cutoff,
+                                        unsigned int perm, int last_seed) {
+  LisaResult result;
+  result.is_valid = false;
+
+  size_t num_obs = neighbors.size();
+
+  // Empirical Bayes standardization of the event/base rates.
+  std::vector<double> smoothed = eb_rate_standardize(base_data, event_data, undefs);
+
+  std::vector<bool> copy_undefs(num_obs, false);
+  if (undefs.size() == num_obs) {
+    for (size_t i = 0; i < num_obs; ++i) {
+      copy_undefs[i] = undefs[i] == 1;
+    }
+  }
+
+  int nCPUs = 1;
+  // Use the same permutation path as local_moran() (avoids per-observation
+  // permutation generation and is much faster for large N/perm, especially in WASM).
+  std::string perm_method = "LookupTable";
+  GeoDaWeight* w = new VectorWeight(neighbors);
+
+  UniLocalMoran* lisa =
+      new UniLocalMoran(static_cast<int>(num_obs), w, smoothed, copy_undefs, significance_cutoff, nCPUs,
+                        static_cast<int>(perm), perm_method, static_cast<uint64_t>(last_seed));
+
+  if (lisa) {
+    set_lisa_content(lisa, result);
+    delete lisa;
+  }
+
+  delete w;
+
+  return result;
 }
 
 geoda::LisaResult geoda::local_joincount(const std::vector<double>& data,
@@ -267,27 +363,6 @@ geoda::LisaResult geoda::local_multijoincount(const std::vector<std::vector<doub
         expand_result(result, num_obs, comp_to_orig, neighbors);
         return result;
       }
-    }
-  }
-
-  // The complementary bivariate no-colocation case (every observation has exactly
-  // one variable = 1) is served by local_bijoincount, not the multivariate
-  // colocation join count. Match that contract and reject only that case; other
-  // bivariate inputs (e.g. with (0,0) observations) are forwarded to
-  // MultiJoinCount. The per-observation pair is checked because the marginal
-  // 1-counts alone can sum to num_valid for a valid colocation input such as
-  // (1,1)+(0,0) rows.
-  if (num_vars == 2) {
-    bool all_complementary = true;
-    for (size_t c = 0; c < num_valid; ++c) {
-      if (comp_data[0][c] + comp_data[1][c] != 1.0) {
-        all_complementary = false;
-        break;
-      }
-    }
-    if (all_complementary) {
-      expand_result(result, num_obs, comp_to_orig, neighbors);
-      return result;
     }
   }
 
