@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "lisa/LISA.h"
+#include "lisa/BatchLISA.h"
 
 namespace geoda {
 
@@ -27,15 +28,15 @@ struct LisaResult {
   std::vector<std::string> labels;
   std::vector<std::string> colors;
 
-  bool get_is_valid() { return is_valid; }
-  std::vector<double> get_sig_local() { return sig_local_vec; }
-  std::vector<int> get_sig_cat() { return sig_cat_vec; }
-  std::vector<int> get_cluster() { return cluster_vec; }
-  std::vector<double> get_lag() { return lag_vec; }
-  std::vector<double> get_lisa() { return lisa_vec; }
-  std::vector<int> get_nn() { return nn_vec; }
-  std::vector<std::string> get_labels() { return labels; }
-  std::vector<std::string> get_colors() { return colors; }
+  bool get_is_valid() const { return is_valid; }
+  std::vector<double> get_sig_local() const { return sig_local_vec; }
+  std::vector<int> get_sig_cat() const { return sig_cat_vec; }
+  std::vector<int> get_cluster() const { return cluster_vec; }
+  std::vector<double> get_lag() const { return lag_vec; }
+  std::vector<double> get_lisa() const { return lisa_vec; }
+  std::vector<int> get_nn() const { return nn_vec; }
+  std::vector<std::string> get_labels() const { return labels; }
+  std::vector<std::string> get_colors() const { return colors; }
 };
 
 static void set_lisa_content(LISA* lisa, LisaResult& rst) {
@@ -46,6 +47,48 @@ static void set_lisa_content(LISA* lisa, LisaResult& rst) {
   rst.lag_vec = lisa->GetSpatialLagValues();
   rst.lisa_vec = lisa->GetLISAValues();
   rst.nn_vec = lisa->GetNumNeighbors();
+  rst.labels = lisa->GetLabels();
+  rst.colors = lisa->GetColors();
+}
+
+struct BatchLisaResult {
+  bool is_valid;
+  std::vector<std::vector<double>> lisa_values;
+  std::vector<std::vector<double>> sig_values;
+  std::vector<std::vector<int>> cluster_values;
+  std::vector<std::vector<double>> lag_values;
+  std::vector<int> nn;
+  std::vector<std::string> labels;
+  std::vector<std::string> colors;
+
+  bool get_is_valid() const { return is_valid; }
+  std::vector<std::vector<double>> get_lisa_values() const { return lisa_values; }
+  std::vector<std::vector<double>> get_sig_values() const { return sig_values; }
+  std::vector<std::vector<int>> get_cluster_values() const { return cluster_values; }
+  std::vector<std::vector<double>> get_lag_values() const { return lag_values; }
+  std::vector<int> get_nn() const { return nn; }
+  std::vector<std::string> get_labels() const { return labels; }
+  std::vector<std::string> get_colors() const { return colors; }
+};
+
+static void set_batch_lisa_content(BatchLISA* lisa, BatchLisaResult& rst, size_t num_vars) {
+  rst.is_valid = true;
+  // Clear first so the helper is idempotent when rst is reused.
+  rst.lisa_values.clear();
+  rst.sig_values.clear();
+  rst.cluster_values.clear();
+  rst.lag_values.clear();
+  rst.lisa_values.reserve(num_vars);
+  rst.sig_values.reserve(num_vars);
+  rst.cluster_values.reserve(num_vars);
+  rst.lag_values.reserve(num_vars);
+  for (size_t i = 0; i < num_vars; ++i) {
+    rst.lisa_values.push_back(lisa->GetLISAValues(static_cast<int>(i)));
+    rst.sig_values.push_back(lisa->GetLocalSignificanceValues(static_cast<int>(i)));
+    rst.cluster_values.push_back(lisa->GetClusterIndicators(static_cast<int>(i)));
+    rst.lag_values.push_back(lisa->GetSpatialLagValues(static_cast<int>(i)));
+  }
+  rst.nn = lisa->GetNumNeighbors();
   rst.labels = lisa->GetLabels();
   rst.colors = lisa->GetColors();
 }
@@ -72,10 +115,35 @@ LisaResult local_multivariate_geary(const std::vector<std::vector<double>>& data
                                     const std::vector<std::vector<unsigned int>>& undefs, double significance_cutoff,
                                     unsigned int perm, int last_seed);
 
+LisaResult local_moran_eb(const std::vector<double>& event_data, const std::vector<double>& base_data,
+                          const std::vector<std::vector<unsigned int>>& neighbors,
+                          const std::vector<unsigned int>& undefs, double significance_cutoff, unsigned int perm,
+                          int last_seed);
+
+LisaResult local_joincount(const std::vector<double>& data,
+                           const std::vector<std::vector<unsigned int>>& neighbors,
+                           const std::vector<unsigned int>& undefs, double significance_cutoff, unsigned int perm,
+                           int last_seed);
+
+LisaResult local_multijoincount(const std::vector<std::vector<double>>& data,
+                                const std::vector<std::vector<unsigned int>>& neighbors,
+                                const std::vector<std::vector<unsigned int>>& undefs, double significance_cutoff,
+                                unsigned int perm, int last_seed);
+
 LisaResult quantile_lisa(int k, int quantile, const std::vector<double>& data,
                          const std::vector<std::vector<unsigned int>>& neighbors,
                          const std::vector<unsigned int>& undefs, double significance_cutoff, unsigned int perm,
                          int last_seed);
+
+BatchLisaResult batch_local_moran(const std::vector<std::vector<double>>& data,
+                                  const std::vector<std::vector<unsigned int>>& neighbors,
+                                  const std::vector<std::vector<unsigned int>>& undefs, double significance_cutoff,
+                                  unsigned int perm, int last_seed);
+LisaResult local_multiquantilelisa(const std::vector<int>& k_s, const std::vector<int>& quantile_s,
+                                   const std::vector<std::vector<double>>& data,
+                                   const std::vector<std::vector<unsigned int>>& neighbors,
+                                   const std::vector<std::vector<unsigned int>>& undefs, double significance_cutoff,
+                                   unsigned int perm, int last_seed);
 }  // namespace geoda
 
 #endif  // GEODA_LOCAL_STATISTICS_H

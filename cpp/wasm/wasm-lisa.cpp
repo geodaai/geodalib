@@ -51,11 +51,26 @@ EMSCRIPTEN_BINDINGS(wasmgeoda) {
       .function("getLabels", &geoda::LisaResult::get_labels)
       .function("getColors", &geoda::LisaResult::get_colors);
 
+  emscripten::class_<geoda::BatchLisaResult>("BatchLisaResult")
+      .function("isValid", &geoda::BatchLisaResult::get_is_valid)
+      .function("getLisaValues", &geoda::BatchLisaResult::get_lisa_values)
+      .function("getPValues", &geoda::BatchLisaResult::get_sig_values)
+      .function("getClusters", &geoda::BatchLisaResult::get_cluster_values)
+      .function("getLagValues", &geoda::BatchLisaResult::get_lag_values)
+      .function("getNN", &geoda::BatchLisaResult::get_nn)
+      .function("getLabels", &geoda::BatchLisaResult::get_labels)
+      .function("getColors", &geoda::BatchLisaResult::get_colors);
+
   emscripten::function("localMoran", &geoda::local_moran);
+  emscripten::function("batchLocalMoran", &geoda::batch_local_moran);
+  emscripten::function("localMoranEB", &geoda::local_moran_eb);
   emscripten::function("localG", &geoda::local_g);
   emscripten::function("bivariateLocalMoran", &geoda::local_bivariate_moran);
   emscripten::function("localGeary", &geoda::local_geary);
   emscripten::function("multivariateLocalGeary", &geoda::local_multivariate_geary);
+  emscripten::function("multivariateQuantileLisa", &geoda::local_multiquantilelisa);
+  emscripten::function("localJoinCount", &geoda::local_joincount);
+  emscripten::function("multivariateLocalJoinCount", &geoda::local_multijoincount);
   emscripten::function("quantileLisa", &geoda::quantile_lisa);
 }
 #endif
