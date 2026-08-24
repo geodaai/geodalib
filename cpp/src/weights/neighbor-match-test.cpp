@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <limits>
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,12 +14,11 @@
 
 namespace {
 
-double combinatorial(unsigned int n, unsigned int k) {
-  double r = 1.0, s = 1.0;
-  unsigned int kk = k > n / 2 ? k : n - k;
-  for (unsigned int i = n; i > kk; --i) r *= i;
-  for (unsigned int i = (n - kk); i > 0; --i) s *= i;
-  return r / s;
+// log|C(n, k)| computed via lgamma so the intermediate products never overflow
+// for large n/k (e.g. 300 observations with k = 150). C(n, k) = 0 when k > n.
+double ln_combination(unsigned int n, unsigned int k) {
+  if (k > n) return -std::numeric_limits<double>::infinity();
+  return std::lgamma(n + 1.0) - std::lgamma(k + 1.0) - std::lgamma(n - k + 1.0);
 }
 
 std::string to_lower(const std::string& s) {
@@ -63,11 +63,38 @@ std::vector<std::vector<double>> geoda::neighbor_match_test(const GeometryCollec
   size_t num_obs = geoms.size();
   bool manhattan = to_lower(dist_type) == "manhattan";
 
-  if (num_obs == 0 || k == 0) {
+  // k >= num_obs is impossible (an observation can have at most num_obs - 1
+  // neighbors), and the hypergeometric model below draws k neighbors from a
+  // universe of num_obs - 1 candidates. Reject it before the spatial search so
+  // the p-value table is never left with non-probability sentinels.
+  if (num_obs == 0 || k == 0 || k >= num_obs) {
     return {};
   }
 
-  std::vector<std::vector<unsigned int>> spatial_nbrs = geoda::knearest_neighbors(geoms, k);
+  // Spatial k-NN with an explicit (distance, index) tie-break. boost's R-tree
+  // nearest query (used by knearest_neighbors) does not define a stable order
+  // for equidistant candidates, so the spatial neighbor selection is computed
+  // directly here to keep the overlap cardinality deterministic across runs.
+  std::vector<std::vector<unsigned int>> spatial_nbrs(num_obs);
+  std::vector<std::vector<double>> centroids = geoms.get_centroids();
+  for (size_t i = 0; i < num_obs; ++i) {
+    std::vector<std::pair<double, unsigned int>> dists;
+    for (size_t j = 0; j < num_obs; ++j) {
+      if (i == j) continue;
+      const std::vector<double>& c1 = centroids[i];
+      const std::vector<double>& c2 = centroids[j];
+      double dx = c1[0] - c2[0], dy = c1[1] - c2[1];
+      dists.emplace_back(std::sqrt(dx * dx + dy * dy), static_cast<unsigned int>(j));
+    }
+    std::sort(dists.begin(), dists.end(),
+              [](const std::pair<double, unsigned int>& x, const std::pair<double, unsigned int>& y) {
+                if (x.first != y.first) return x.first < y.first;
+                return x.second < y.second;
+              });
+    for (unsigned int m = 0; m < k; ++m) {
+      spatial_nbrs[i].push_back(dists[m].second);
+    }
+  }
 
   std::vector<std::vector<double>> scaled;
   for (const auto& var : data) {
@@ -125,17 +152,21 @@ std::vector<std::vector<double>> geoda::neighbor_match_test(const GeometryCollec
   // (rows - 1) candidates (self excluded): C(k, v) * C(rows - 1 - k, k - v) /
   // C(rows - 1, k). One entry per cardinality 0..k; combinations outside the
   // hypergeometric support have probability 0.
+  // With k < num_obs guaranteed above, universe = num_obs - 1 >= k so the
+  // combinations below never receive invalid arguments and the endpoint
+  // cardinalities (v = 0 and v = k) always get real probabilities.
   std::vector<double> pval_dict(k + 1, 0.0);
-  unsigned int rows = static_cast<unsigned int>(num_obs);
-  if (rows > k) {
-    unsigned int universe = rows - 1;
-    for (unsigned int v = 0; v <= k; ++v) {
-      if (k - v <= universe - k) {
-        pval_dict[v] = combinatorial(k, v) * combinatorial(universe - k, k - v) / combinatorial(universe, k);
-      }
+  unsigned int universe = static_cast<unsigned int>(num_obs) - 1;
+  for (unsigned int v = 0; v <= k; ++v) {
+    if (k - v <= universe - k) {
+      pval_dict[v] = std::exp(ln_combination(k, v) + ln_combination(universe - k, k - v) -
+                              ln_combination(universe, k));
     }
   }
-  std::vector<double> val_p(num_obs, -1.0);
+  // Every cardinality is in [0, k] and maps to a real pval_dict entry above, so
+  // the NaN default below only guards against an unexpected out-of-range
+  // cardinality; -1 is not a probability and must not be returned to callers.
+  std::vector<double> val_p(num_obs, std::numeric_limits<double>::quiet_NaN());
   for (size_t i = 0; i < num_obs; ++i) {
     unsigned int c = static_cast<unsigned int>(val_cnbrs[i]);
     if (c < pval_dict.size()) {

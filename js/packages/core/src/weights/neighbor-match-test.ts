@@ -69,6 +69,16 @@ export async function getNeighborMatchTestFromBinaryGeometries({
   );
 
   const n = geomCollection.size();
+  // Each variable must have exactly one value per observation. Padding a short
+  // variable with NaN (or truncating a long one) would bypass the C++ length
+  // check and silently produce an invalid test result.
+  for (const varData of data) {
+    if (varData.length !== n) {
+      throw new Error(
+        `getNeighborMatchTestFromBinaryGeometries: each variable must have ${n} values (one per observation), got ${varData.length}`
+      );
+    }
+  }
   const wasmData = new wasmInstance.VecVecDouble();
   for (const varData of data) {
     const wasmVar = new wasmInstance.VectorDouble();
@@ -107,6 +117,13 @@ export async function getNeighborMatchTestFromGeomCollection({
 }): Promise<NeighborMatchTestResult> {
   const wasmInstance = await initWASM();
   const n = geomCollection.size();
+  for (const varData of data) {
+    if (varData.length !== n) {
+      throw new Error(
+        `getNeighborMatchTestFromGeomCollection: each variable must have ${n} values (one per observation), got ${varData.length}`
+      );
+    }
+  }
   const wasmData = new wasmInstance.VecVecDouble();
   for (const varData of data) {
     const wasmVar = new wasmInstance.VectorDouble();

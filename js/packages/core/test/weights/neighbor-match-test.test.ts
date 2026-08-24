@@ -46,7 +46,32 @@ describe('Neighbor Match Test', () => {
       binaryGeometries,
     });
 
-    expect(result.cardinality.length).toBe(5);
-    expect(result.probability.length).toBe(5);
+    expect(result.cardinality).toEqual([0, 1, 0, 0, 1]);
+    // k = 1 with 5 observations: universe = 4, P(0) = 3/4, P(1) = 1/4.
+    // Probabilities are computed via log-gamma combinations, so compare with tolerance.
+    const expectedProb = [0.75, 0.25, 0.75, 0.75, 0.25];
+    result.probability.forEach((p, i) => expect(p).toBeCloseTo(expectedProb[i], 12));
+  });
+
+  it('should reject variables whose length does not match the observations', async () => {
+    await expect(
+      getNeighborMatchTestFromBinaryGeometries({
+        k: 1,
+        data: [[1, 2, 3, 4]],
+        binaryGeometryType,
+        binaryGeometries,
+      })
+    ).rejects.toThrow('must have 5 values');
+  });
+
+  it('should reject k at least as large as the number of observations', async () => {
+    const result = await getNeighborMatchTestFromBinaryGeometries({
+      k: 5,
+      data: [[1, 2, 3, 4, 5]],
+      binaryGeometryType,
+      binaryGeometries,
+    });
+    expect(result.cardinality).toEqual([]);
+    expect(result.probability).toEqual([]);
   });
 });

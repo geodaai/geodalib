@@ -4,6 +4,8 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include <cmath>
+
 #include "weights/weights.h"
 #include "test/data.h"
 
@@ -79,4 +81,53 @@ TEST(WEIGHTS, NEIGHBOR_MATCH_TEST) {
   std::vector<std::vector<double>> empty =
       geoda::neighbor_match_test(TEST_POINT_COLLECTION, 1, bad, "standardize", "euclidean", false);
   EXPECT_TRUE(empty.empty());
+}
+
+TEST(WEIGHTS, NEIGHBOR_MATCH_EDGE_CASES) {
+  // k >= num_obs is impossible (at most num_obs - 1 neighbors exist); it must
+  // be rejected up front rather than leaving non-probability sentinels behind.
+  std::vector<std::vector<double>> data3 = {{1.0, 2.0, 3.0}};
+  std::vector<std::vector<double>> rejected =
+      geoda::neighbor_match_test(TEST_POINT_COLLECTION, 3, data3, "standardize", "euclidean", false);
+  EXPECT_TRUE(rejected.empty());
+
+  // Symmetric geometry: A(0,0) is equidistant from B(1,0) and C(0,1), and B and
+  // C share an attribute value. The (distance, index) tie-break must pick B for
+  // A in both spaces, giving cardinality [1, 0, 0] deterministically.
+  geoda::PointCollection sym(std::vector<double>{0, 1, 0}, std::vector<double>{0, 0, 1},
+                             std::vector<unsigned int>{0, 1, 2}, std::vector<unsigned int>{1, 1, 1});
+  std::vector<std::vector<double>> sym_data = {{0.0, 1.0, 1.0}};
+  std::vector<std::vector<double>> sym_result =
+      geoda::neighbor_match_test(sym, 1, sym_data, "raw", "euclidean", false);
+  ASSERT_EQ(sym_result.size(), 2u);
+  EXPECT_THAT(sym_result[0], ElementsAre(1.0, 0.0, 0.0));
+  // k = 1 with universe = 2: P(0) = P(1) = 0.5
+  EXPECT_NEAR(sym_result[1][0], 0.5, 1e-9);
+  EXPECT_NEAR(sym_result[1][1], 0.5, 1e-9);
+  EXPECT_NEAR(sym_result[1][2], 0.5, 1e-9);
+
+  // Large n with k near the middle (300 observations, k = 150) must not overflow
+  // the intermediate combination products, and every probability must be a real
+  // number in [0, 1].
+  std::vector<double> xs, ys, vals;
+  for (int i = 0; i < 30; ++i) {
+    for (int j = 0; j < 10; ++j) {
+      xs.push_back(static_cast<double>(i));
+      ys.push_back(static_cast<double>(j));
+      vals.push_back(static_cast<double>(i + j));
+    }
+  }
+  std::vector<unsigned int> parts(xs.size()), sizes(xs.size(), 1);
+  for (size_t i = 0; i < parts.size(); ++i) parts[i] = static_cast<unsigned int>(i);
+  geoda::PointCollection grid(xs, ys, parts, sizes);
+  std::vector<std::vector<double>> large =
+      geoda::neighbor_match_test(grid, 150, {vals}, "raw", "euclidean", false);
+  ASSERT_EQ(large.size(), 2u);
+  ASSERT_EQ(large[0].size(), 300u);
+  ASSERT_EQ(large[1].size(), 300u);
+  for (double p : large[1]) {
+    EXPECT_TRUE(std::isfinite(p));
+    EXPECT_GE(p, 0.0);
+    EXPECT_LE(p, 1.0);
+  }
 }
