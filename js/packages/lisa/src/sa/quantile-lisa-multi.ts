@@ -47,7 +47,7 @@ export async function multivariateQuantileLisa({
   quantileValues,
   data,
   neighbors,
-  permutation = 99,
+  permutation = 999,
   significanceCutoff = 0.05,
   seed = 1234567890,
 }: MultivariateQuantileLisaProps): Promise<MultivariateQuantileLisaResult> {

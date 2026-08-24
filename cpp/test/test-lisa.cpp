@@ -23,6 +23,25 @@ TEST(LISA, MULTIVARIATE_QUANTILE_LISA) {
   EXPECT_EQ(result.lisa_vec.size(), 3u);
 }
 
+TEST(LISA, MULTIVARIATE_QUANTILE_LISA_NO_COLOCATION_3_VARS) {
+  // Three variables, none of which co-locate anywhere: the binned variables are
+  // var0={1,0,0}, var1={0,1,1}, var2={1,0,0}, so every per-observation product
+  // (zz) is 0. MultiJoinCount's no-colocation branch is bivariate-only (with
+  // three or more variables it would silently use only data[0] and data[1]), so
+  // the wrapper must fall through to the colocation branch and report all-zero
+  // local statistics. Regression: the branch used to be entered for any variable
+  // count, giving obs 0 a non-zero count of 1 from the dropped third variable.
+  geoda::LisaResult result = geoda::local_multiquantilelisa(
+      {2, 2, 2}, {1, 2, 1}, {{1, 3, 4}, {1, 5, 2}, {1, 2, 3}}, TEST_NEIGHBORS, {{0, 0, 0}, {0, 0, 0}, {0, 0, 0}},
+      0.05, 99, 12345);
+
+  EXPECT_TRUE(result.is_valid);
+  ASSERT_EQ(result.lisa_vec.size(), 3u);
+  EXPECT_DOUBLE_EQ(result.lisa_vec[0], 0.0);
+  EXPECT_DOUBLE_EQ(result.lisa_vec[1], 0.0);
+  EXPECT_DOUBLE_EQ(result.lisa_vec[2], 0.0);
+}
+
 TEST(LISA, MULTIVARIATE_QUANTILE_LISA_UNDEF_MERGE) {
   // obs 1 is undefined only in the first variable. MultiJoinCount merges the
   // per-variable undefined flags (an observation is undefined if any variable is
