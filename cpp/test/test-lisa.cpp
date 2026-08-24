@@ -7,7 +7,7 @@
 #include "sa/lisa-api.h"
 
 // Points at (0,0), (1,1), (2,2) form a 1D chain: 0 <-> 1 <-> 2.
-static std::vector<std::vector<unsigned int>> TEST_NEIGHBORS = {{1}, {0, 2}, {1}};
+static const std::vector<std::vector<unsigned int>> TEST_NEIGHBORS = {{1}, {0, 2}, {1}};
 
 TEST(LISA, MULTIVARIATE_QUANTILE_LISA) {
   // k must be strictly below num_obs (3), so use 2 classes here.
