@@ -917,6 +917,13 @@ export interface GeoDaModule {
   getNearestNeighbors(geometries: GeometryCollection, k: UnsignedInt): VecVecUInt;
 
   /**
+   * Make clusters spatially contiguous
+   * @param clusters list of clusters (each a list of observation indices)
+   * @param neighbors spatial weights matrix as adjacency list
+   */
+  makeSpatial(clusters: VecVecInt, neighbors: VecVecUInt): VecVecInt;
+
+  /**
    * Local Neighbor Match Test
    * @param geoms the geometry collection
    * @param k the number of nearest neighbors

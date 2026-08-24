@@ -96,6 +96,7 @@
 - [isHexagonIdLayerData](functions/isHexagonIdLayerData.md)
 - [isPointLayerData](functions/isPointLayerData.md)
 - [lineToFeature](functions/lineToFeature.md)
+- [makeSpatial](functions/makeSpatial.md)
 - [naturalBreaks](functions/naturalBreaks.md)
 - [percentileBreaks](functions/percentileBreaks.md)
 - [polygonToFeature](functions/polygonToFeature.md)

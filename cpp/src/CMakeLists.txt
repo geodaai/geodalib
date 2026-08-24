@@ -31,6 +31,8 @@ set (CORE_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/data/range_adjust.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/data/range_standardize.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/data/standardize.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/clustering/make_spatial.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/clustering/clustering-api.cpp
     ${WEIGHTS_SOURCE_FILES}
 )
 set (CORE_SOURCE_FILES ${CORE_SOURCE_FILES} PARENT_SCOPE)
