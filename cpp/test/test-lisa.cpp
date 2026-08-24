@@ -37,6 +37,23 @@ TEST(LISA, MULTIVARIATE_QUANTILE_LISA_UNDEF_MERGE) {
   EXPECT_DOUBLE_EQ(result.lisa_vec[1], 0.0);
 }
 
+TEST(LISA, MULTIVARIATE_QUANTILE_LISA_SHORT_UNDEF_ROW) {
+  // The first undef row only carries a flag for obs 0 (shorter than num_obs).
+  // to_bool_undefs and the undef_i guard must consult the existing entry instead
+  // of dropping the row entirely: obs 0 is undefined (category 6), obs 1/2 stay
+  // defined.
+  std::vector<std::vector<unsigned int>> undefs = {{1}, {0, 0, 0}};
+  geoda::LisaResult result =
+      geoda::local_multiquantilelisa({4, 4}, {1, 2}, {{1, 2, 3}, {3, 2, 1}}, TEST_NEIGHBORS, undefs, 0.05, 99, 12345);
+  EXPECT_TRUE(result.is_valid);
+  ASSERT_EQ(result.sig_cat_vec.size(), 3u);
+
+  EXPECT_EQ(result.sig_cat_vec[0], 6);
+  EXPECT_DOUBLE_EQ(result.lisa_vec[0], 0.0);
+  EXPECT_NE(result.sig_cat_vec[1], 6);
+  EXPECT_NE(result.sig_cat_vec[2], 6);
+}
+
 TEST(LISA, MULTIVARIATE_QUANTILE_LISA_INVALID_INPUTS) {
   std::vector<std::vector<unsigned int>> undefs = {{0, 0, 0}, {0, 0, 0}};
 

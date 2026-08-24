@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 // Copyright contributors to the geodalib project
 
+#include <algorithm>
 #include <limits>
 
 #include "lisa/MultiJoinCount.h"
@@ -10,14 +11,17 @@
 #include "weights/vector-weight.h"
 
 // Convert a vector<vector<unsigned int>> of per-variable undefined flags into a
-// vector<vector<bool>> for the LISA constructors.
+// vector<vector<bool>> for the LISA constructors. Rows may be shorter than
+// num_obs; like MultiJoinCount, only the entries that exist are consulted and
+// missing entries stay false.
 static std::vector<std::vector<bool>> to_bool_undefs(const std::vector<std::vector<unsigned int>>& undefs,
                                                      size_t num_vars, size_t num_obs) {
   std::vector<std::vector<bool>> copy_undefs(num_vars);
   for (size_t i = 0; i < num_vars; ++i) {
     copy_undefs[i].resize(num_obs, false);
-    if (i < undefs.size() && undefs[i].size() == num_obs) {
-      for (size_t j = 0; j < num_obs; ++j) {
+    if (i < undefs.size()) {
+      size_t row_len = std::min(undefs[i].size(), num_obs);
+      for (size_t j = 0; j < row_len; ++j) {
         copy_undefs[i][j] = undefs[i][j] == 1;
       }
     }
@@ -58,8 +62,15 @@ geoda::LisaResult geoda::local_multiquantilelisa(const std::vector<int>& k_s, co
     if (k < 2 || q < 1 || q > k) {
       return result;
     }
-    std::vector<unsigned int> undef_i =
-        (i < undefs.size() && undefs[i].size() == num_obs) ? undefs[i] : std::vector<unsigned int>(num_obs, 0);
+    // Consult existing entries only; missing entries stay undefined-free so a
+    // shorter row still contributes the flags it does carry.
+    std::vector<unsigned int> undef_i(num_obs, 0);
+    if (i < undefs.size()) {
+      size_t row_len = std::min(undefs[i].size(), num_obs);
+      for (size_t j = 0; j < row_len; ++j) {
+        undef_i[j] = undefs[i][j];
+      }
+    }
 
     std::vector<double> breaks = geoda::quantile_breaks(k, data[i], undef_i);
 
