@@ -136,7 +136,7 @@ export type MultivariateLocalJoinCountProps = {
 export async function multivariateLocalJoinCount({
   data,
   neighbors,
-  permutation = 105,
+  permutation = 999,
   significanceCutoff = 0.05,
   seed = 1234567890,
 }: MultivariateLocalJoinCountProps): Promise<LocalJoinCountResult> {

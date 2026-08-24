@@ -38,7 +38,12 @@ geoda::LisaResult geoda::local_joincount(const std::vector<double>& data,
     }
   }
   int nCPUs = 1;
-  std::string perm_method = "complete";
+  // Use the lookup-table permutation path: the "complete" sampler draws exactly
+  // numNeighbors valid candidates and rejects undefined ones, which can loop forever
+  // when an observation with a non-zero local join count has undefined neighbors and
+  // too few valid candidates remain. The lookup-table path filters undefined
+  // observations while applying the permutation, so it cannot hang.
+  std::string perm_method = "LookupTable";
   GeoDaWeight* w = new VectorWeight(neighbors);
 
   UniJoinCount* lisa =
