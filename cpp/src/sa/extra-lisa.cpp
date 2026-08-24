@@ -59,7 +59,10 @@ geoda::LisaResult geoda::local_multiquantilelisa(const std::vector<int>& k_s, co
   for (size_t i = 0; i < num_vars; ++i) {
     int k = k_s[i];
     int q = quantile_s[i];
-    if (k < 2 || q < 1 || q > k) {
+    // Match the univariate port: k must be strictly below num_obs, otherwise the
+    // class count is not meaningful for this sample (quantile_breaks would also
+    // allocate k-1 breakpoints for nothing).
+    if (k < 2 || k >= static_cast<int>(num_obs) || q < 1 || q > k) {
       return result;
     }
     // Consult existing entries only; missing entries stay undefined-free so a

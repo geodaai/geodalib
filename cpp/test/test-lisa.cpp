@@ -10,7 +10,8 @@
 static std::vector<std::vector<unsigned int>> TEST_NEIGHBORS = {{1}, {0, 2}, {1}};
 
 TEST(LISA, MULTIVARIATE_QUANTILE_LISA) {
-  std::vector<int> k_s = {4, 4};
+  // k must be strictly below num_obs (3), so use 2 classes here.
+  std::vector<int> k_s = {2, 2};
   std::vector<int> quantile_s = {1, 2};
   std::vector<std::vector<double>> data = {{1, 2, 3}, {3, 2, 1}};
   std::vector<std::vector<unsigned int>> undefs = {{0, 0, 0}, {0, 0, 0}};
@@ -29,7 +30,7 @@ TEST(LISA, MULTIVARIATE_QUANTILE_LISA_UNDEF_MERGE) {
   // that used to break out on correctly-sized undef rows and ignore the flags.
   std::vector<std::vector<unsigned int>> undefs = {{0, 1, 0}, {0, 0, 0}};
   geoda::LisaResult result =
-      geoda::local_multiquantilelisa({4, 4}, {1, 2}, {{1, 2, 3}, {3, 2, 1}}, TEST_NEIGHBORS, undefs, 0.05, 99, 12345);
+      geoda::local_multiquantilelisa({2, 2}, {1, 2}, {{1, 2, 3}, {3, 2, 1}}, TEST_NEIGHBORS, undefs, 0.05, 99, 12345);
   EXPECT_TRUE(result.is_valid);
   ASSERT_EQ(result.sig_cat_vec.size(), 3u);
 
@@ -45,7 +46,7 @@ TEST(LISA, MULTIVARIATE_QUANTILE_LISA_SHORT_UNDEF_ROW) {
   // defined.
   std::vector<std::vector<unsigned int>> undefs = {{1}, {0, 0, 0}};
   geoda::LisaResult result =
-      geoda::local_multiquantilelisa({4, 4}, {1, 2}, {{1, 2, 3}, {3, 2, 1}}, TEST_NEIGHBORS, undefs, 0.05, 99, 12345);
+      geoda::local_multiquantilelisa({2, 2}, {1, 2}, {{1, 2, 3}, {3, 2, 1}}, TEST_NEIGHBORS, undefs, 0.05, 99, 12345);
   EXPECT_TRUE(result.is_valid);
   ASSERT_EQ(result.sig_cat_vec.size(), 3u);
 
@@ -53,6 +54,20 @@ TEST(LISA, MULTIVARIATE_QUANTILE_LISA_SHORT_UNDEF_ROW) {
   EXPECT_DOUBLE_EQ(result.lisa_vec[0], 0.0);
   EXPECT_NE(result.sig_cat_vec[1], 6);
   EXPECT_NE(result.sig_cat_vec[2], 6);
+}
+
+TEST(LISA, MULTIVARIATE_QUANTILE_LISA_K_GTE_NUM_OBS) {
+  // k must be strictly below num_obs (3), matching the univariate quantile_lisa
+  // contract. k == num_obs (each obs its own class) is rejected too.
+  geoda::LisaResult result =
+      geoda::local_multiquantilelisa({4, 4}, {1, 2}, {{1, 2, 3}, {3, 2, 1}}, TEST_NEIGHBORS, {{0, 0, 0}, {0, 0, 0}},
+                                     0.05, 99, 12345);
+  EXPECT_FALSE(result.is_valid);
+
+  result =
+      geoda::local_multiquantilelisa({3, 3}, {1, 2}, {{1, 2, 3}, {3, 2, 1}}, TEST_NEIGHBORS, {{0, 0, 0}, {0, 0, 0}},
+                                    0.05, 99, 12345);
+  EXPECT_FALSE(result.is_valid);
 }
 
 TEST(LISA, QUANTILE_BREAKS_EXCLUDE_UNDEFINED) {
