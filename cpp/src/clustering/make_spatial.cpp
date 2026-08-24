@@ -216,21 +216,36 @@ MakeSpatial::MakeSpatial(int num_obs, const std::vector<std::vector<int>>& clust
   num_clusters = static_cast<int>(clusters.size());
 
   for (int i = 0; i < num_clusters; ++i) {
-    std::vector<int> cluster = clusters[i];
+    const std::vector<int>& cluster = clusters[i];
     // An empty cluster would leave MakeSpatialCluster with a null core that a
     // later accessor would dereference; reject the whole partition up front.
-    // (Out-of-range cluster elements also fail the cluster_dict.size() !=
-    // num_obs check below.)
     if (cluster.empty()) {
       valid = false;
+      continue;
     }
     for (auto j : cluster) {
-      cluster_dict[j] = i;
+      // Out-of-range elements would reach weights->GetNeighbors() with an
+      // unchecked index inside MakeSpatialCluster; reject the partition before
+      // any cluster is constructed. The element is not mapped, so the
+      // cluster_dict.size() check below stays meaningful for duplicates.
+      if (j < 0 || j >= num_obs) {
+        valid = false;
+      } else {
+        cluster_dict[j] = i;
+      }
     }
   }
 
   if (static_cast<int>(cluster_dict.size()) != num_obs) {
     valid = false;
+  }
+
+  // An invalid partition (empty cluster, out-of-range element, or a mapping
+  // that does not cover every observation) is rejected up front: constructing
+  // MakeSpatialCluster anyway could dereference a null core or index neighbors
+  // out of bounds. GetClusters() returns the input unchanged for these.
+  if (!valid) {
+    return;
   }
 
   for (int i = 0; i < num_clusters; ++i) {
@@ -350,6 +365,14 @@ void MakeSpatial::UpdateComponent(MakeSpatialComponent* moved_comp, MakeSpatialC
 }
 
 std::vector<std::vector<int>> MakeSpatial::GetClusters() {
+  // When the partition was rejected up front (empty cluster, out-of-range
+  // element, or a mapping that does not cover every observation) sk_clusters is
+  // empty, so return the input unchanged rather than dereferencing unbuilt
+  // clusters. A run that fails midway also reports the original input.
+  if (!valid) {
+    return this->clusters;
+  }
+
   int total_core_obs = 0;
   for (int i = 0; i < num_clusters; ++i) {
     MakeSpatialCluster* skc = sk_clusters[i];

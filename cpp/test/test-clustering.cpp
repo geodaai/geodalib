@@ -92,3 +92,14 @@ TEST(CLUSTERING, MAKE_SPATIAL_REJECTS_EMPTY_CLUSTER) {
   ASSERT_EQ(result.size(), 3u);
   EXPECT_TRUE(result[2].empty());
 }
+
+TEST(CLUSTERING, MAKE_SPATIAL_REJECTS_OUT_OF_RANGE_ELEMENT) {
+  // An out-of-range cluster element would reach weights->GetNeighbors() with an
+  // unchecked index inside MakeSpatialCluster; the partition must be rejected
+  // and the input returned unchanged instead of crashing.
+  std::vector<std::vector<int>> clusters = {{0, 1}, {2, 5}};
+  std::vector<std::vector<int>> result = geoda::make_spatial(clusters, TEST_NEIGHBORS);
+
+  ASSERT_EQ(result.size(), 2u);
+  EXPECT_EQ(result[1], (std::vector<int>{2, 5}));
+}
