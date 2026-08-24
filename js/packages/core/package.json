@@ -1,7 +1,7 @@
 {
   "name": "@geoda/core",
   "description": "Core module for GeoDaLib",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "author": "Xun Li <lixun910@gmail.com>",
   "license": "MIT",
   "sideEffects": false,
@@ -38,7 +38,7 @@
     "geojson": "^0.5.0"
   },
   "devDependencies": {
-    "@geoda/common": "^0.0.22",
+    "@geoda/common": "^0.0.23",
     "@jest/globals": "^29.7.0",
     "@loaders.gl/arrow": "^4.1.0-alpha.4",
     "@types/geojson": "^7946.0.10",

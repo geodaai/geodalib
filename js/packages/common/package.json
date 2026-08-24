@@ -2,7 +2,7 @@
   "name": "@geoda/common",
   "description": "Common module for GeoDaLib",
   "private": true,
-  "version": "0.0.22",
+  "version": "0.0.23",
   "author": "Xun Li <lixun910@gmail.com>",
   "license": "MIT",
   "main": "./dist/index.cjs",
