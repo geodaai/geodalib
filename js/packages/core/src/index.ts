@@ -7,6 +7,7 @@ export type { GeometryCollection } from '@geoda/common';
 export * from './init';
 
 export * from './weights/distance-neighbors';
+export * from './weights/neighbor-match-test';
 export * from './weights/kernel-knn-weights';
 export * from './weights/kernel-weights';
 export * from './weights/nearest-neighbors';

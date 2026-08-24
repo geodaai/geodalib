@@ -115,6 +115,83 @@ describe('createPointCollectionFromBinaryFeatures', () => {
 
     expect(actualCentroids).toEqual(expectedCentroids);
   });
+
+  it('should handle points split across multiple chunks', async () => {
+    const wasmInstance = await initWASM();
+
+    // two chunks, each holding two point features; featureIds restart from 0 in
+    // every chunk, so the collection is only correct if parts are offset by the
+    // points already accumulated from previous chunks.
+    const pointBinaryGeometry: Array<BinaryFeatureCollection> = [
+      {
+        shape: 'binary-feature-collection',
+        points: {
+          ...getBinaryGeometryTemplate(),
+          type: 'Point',
+          globalFeatureIds: { value: new Uint32Array([0, 1]), size: 1 },
+          positions: { value: new Float64Array([1, 1, 2, 2]), size: 2 },
+          properties: [{ index: 0 }, { index: 1 }],
+          featureIds: { value: new Uint32Array([0, 1]), size: 1 },
+        },
+        lines: {
+          ...getBinaryGeometryTemplate(),
+          type: 'LineString',
+          pathIndices: { value: new Uint16Array(0), size: 1 },
+        },
+        polygons: {
+          ...getBinaryGeometryTemplate(),
+          type: 'Polygon',
+          polygonIndices: { value: new Uint16Array(0), size: 1 },
+          primitivePolygonIndices: { value: new Uint16Array(0), size: 1 },
+        },
+      },
+      {
+        shape: 'binary-feature-collection',
+        points: {
+          ...getBinaryGeometryTemplate(),
+          type: 'Point',
+          globalFeatureIds: { value: new Uint32Array([2, 3]), size: 1 },
+          positions: { value: new Float64Array([3, 3, 4, 4]), size: 2 },
+          properties: [{ index: 2 }, { index: 3 }],
+          featureIds: { value: new Uint32Array([0, 1]), size: 1 },
+        },
+        lines: {
+          ...getBinaryGeometryTemplate(),
+          type: 'LineString',
+          pathIndices: { value: new Uint16Array(0), size: 1 },
+        },
+        polygons: {
+          ...getBinaryGeometryTemplate(),
+          type: 'Polygon',
+          polygonIndices: { value: new Uint16Array(0), size: 1 },
+          primitivePolygonIndices: { value: new Uint16Array(0), size: 1 },
+        },
+      },
+    ];
+
+    const pointsArray = pointBinaryGeometry.map(chunk => chunk.points);
+    const points = await createPointCollectionFromBinaryFeatures(pointsArray, wasmInstance);
+
+    const centroids = points.getCentroids();
+
+    expect(centroids?.size()).toBe(4);
+
+    const expectedCentroids = [
+      [1, 1],
+      [2, 2],
+      [3, 3],
+      [4, 4],
+    ];
+
+    const actualCentroids = [
+      [centroids.get(0).get(0), centroids.get(0).get(1)],
+      [centroids.get(1).get(0), centroids.get(1).get(1)],
+      [centroids.get(2).get(0), centroids.get(2).get(1)],
+      [centroids.get(3).get(0), centroids.get(3).get(1)],
+    ];
+
+    expect(actualCentroids).toEqual(expectedCentroids);
+  });
 });
 
 /**

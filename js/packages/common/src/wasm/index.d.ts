@@ -917,6 +917,24 @@ export interface GeoDaModule {
   getNearestNeighbors(geometries: GeometryCollection, k: UnsignedInt): VecVecUInt;
 
   /**
+   * Local Neighbor Match Test
+   * @param geoms the geometry collection
+   * @param k the number of nearest neighbors
+   * @param data the multiple data variables
+   * @param scaleMethod the scaling method (raw, standardize)
+   * @param distType the attribute distance metric (euclidean, manhattan)
+   * @param isMile the unit of spatial distance
+   */
+  neighborMatchTest(
+    geoms: GeometryCollection,
+    k: UnsignedInt,
+    data: VecVecDouble,
+    scaleMethod: string,
+    distType: string,
+    isMile: boolean
+  ): VecVecDouble;
+
+  /**
    * Compute kernel weights for a collection of geometries using k-nearest neighbors.
    * @param geometries the collection of geometries
    * @param k the number of nearest neighbors

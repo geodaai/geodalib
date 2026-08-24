@@ -83,6 +83,26 @@ std::vector<double> get_distance_thresholds(const GeometryCollection& geoms, boo
 std::vector<std::vector<unsigned int>> knearest_neighbors(const GeometryCollection& geoms, unsigned int k);
 
 /**
+ * @brief Compute the local neighbor match test for a collection of geometries.
+ *
+ * Assesses the overlap between k-nearest neighbors in geographic space and k-nearest neighbors
+ * in multi-attribute space. Returns a matrix with two rows: the number of common neighbors
+ * (cardinality) and the hypergeometric probability of observing that overlap.
+ *
+ * @param geoms The geometry collection. If not a point collection, centroids are used.
+ * @param k The number of nearest neighbors.
+ * @param data The multi-attribute data (one vector per variable).
+ * @param scale_method The scaling method ('raw' or 'standardize').
+ * @param dist_type The attribute distance metric ('euclidean' or 'manhattan').
+ * @param is_mile If true, use mile as the spatial distance unit, otherwise kilometer.
+ * @return std::vector<std::vector<double>> A 2-row matrix [cardinality, probability].
+ */
+std::vector<std::vector<double>> neighbor_match_test(const GeometryCollection& geoms, unsigned int k,
+                                                     const std::vector<std::vector<double>>& data,
+                                                     const std::string& scale_method, const std::string& dist_type,
+                                                     bool is_mile);
+
+/**
  * @brief Compute kernel weights for a collection of geometries using k-nearest neighbors.
  *
  * For each geometry, the k nearest neighbors are found. When adaptive_bandwidth is true, the
