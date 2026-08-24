@@ -73,6 +73,10 @@ TEST(LISA, MULTIVARIATE_JOIN_COUNT_DETERMINISTIC) {
   EXPECT_DOUBLE_EQ(result.lisa_vec[1], 1.0);
   EXPECT_DOUBLE_EQ(result.lisa_vec[2], 0.0);
 
+  // Pseudo-p values are seed-dependent, not uniform draws: obs 0 has a single
+  // neighbor (degree 1), so the lookup-table permutation samples one varying
+  // entry across the 99 permutations -> p ~ 0.44. obs 1 has degree 2 and always
+  // samples both non-self values -> deterministic p = 0.01.
   EXPECT_NEAR(result.sig_local_vec[0], 0.44, 1e-9);
   EXPECT_NEAR(result.sig_local_vec[1], 0.01, 1e-9);
   EXPECT_DOUBLE_EQ(result.sig_local_vec[2], -1.0);
@@ -132,4 +136,45 @@ TEST(LISA, MULTIVARIATE_JOIN_COUNT) {
   EXPECT_TRUE(result.is_valid);
   EXPECT_EQ(result.lisa_vec.size(), 3u);
   EXPECT_EQ(result.sig_local_vec.size(), 3u);
+}
+
+TEST(LISA, LOCAL_JOIN_COUNT_ALL_UNDEFINED) {
+  // Every observation undefined compacts to zero observations. The wrapper must
+  // not construct VectorWeight over an empty adjacency list (GetNbrStats would
+  // read before its buffer when num_obs == 0); every observation is reported
+  // undefined and is_valid stays false.
+  std::vector<double> data = {1, 0, 1};
+  std::vector<unsigned int> undefs = {1, 1, 1};
+
+  geoda::LisaResult result = geoda::local_joincount(data, TEST_NEIGHBORS, undefs, 0.05, 99, 12345);
+
+  EXPECT_FALSE(result.is_valid);
+  ASSERT_EQ(result.lisa_vec.size(), 3u);
+  EXPECT_EQ(result.sig_cat_vec[0], 6);
+  EXPECT_EQ(result.sig_cat_vec[1], 6);
+  EXPECT_EQ(result.sig_cat_vec[2], 6);
+  EXPECT_DOUBLE_EQ(result.lisa_vec[0], 0.0);
+  EXPECT_EQ(result.cluster_vec[0], 0);
+  // neighbor counts still reported from the original weights structure
+  EXPECT_EQ(result.nn_vec[0], 1);
+  EXPECT_EQ(result.nn_vec[1], 2);
+  EXPECT_EQ(result.nn_vec[2], 1);
+}
+
+TEST(LISA, MULTIVARIATE_JOIN_COUNT_ALL_UNDEFINED) {
+  // Same contract as the univariate case: no VectorWeight over zero observations.
+  std::vector<std::vector<double>> data = {{1, 0, 1}, {1, 0, 1}};
+  std::vector<std::vector<unsigned int>> undefs = {{1, 1, 1}, {1, 1, 1}};
+
+  geoda::LisaResult result =
+      geoda::local_multijoincount(data, TEST_NEIGHBORS, undefs, 0.05, 99, 12345);
+
+  EXPECT_FALSE(result.is_valid);
+  ASSERT_EQ(result.lisa_vec.size(), 3u);
+  EXPECT_EQ(result.sig_cat_vec[0], 6);
+  EXPECT_EQ(result.sig_cat_vec[1], 6);
+  EXPECT_EQ(result.sig_cat_vec[2], 6);
+  EXPECT_EQ(result.nn_vec[0], 1);
+  EXPECT_EQ(result.nn_vec[1], 2);
+  EXPECT_EQ(result.nn_vec[2], 1);
 }

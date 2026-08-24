@@ -107,6 +107,16 @@ geoda::LisaResult geoda::local_joincount(const std::vector<double>& data,
   std::vector<unsigned int> orig_to_comp = build_compact_map(num_obs, undefs, comp_to_orig);
   size_t num_valid = comp_to_orig.size();
 
+  // An empty (or all-undefined) input compacts to zero observations. Skipping the
+  // weight construction keeps VectorWeight::GetNbrStats from indexing an empty
+  // neighbor-count vector (nnbrs_array[num_obs / 2 - 1] with num_obs == 0 reads
+  // before the buffer). Every observation is reported as undefined, matching the
+  // "no defined observations" contract; is_valid stays false.
+  if (num_valid == 0) {
+    expand_result(result, num_obs, comp_to_orig, neighbors);
+    return result;
+  }
+
   std::vector<double> comp_data(num_valid);
   for (size_t c = 0; c < num_valid; ++c) {
     comp_data[c] = data[comp_to_orig[c]];
@@ -164,6 +174,13 @@ geoda::LisaResult geoda::local_multijoincount(const std::vector<std::vector<doub
   std::vector<size_t> comp_to_orig;
   std::vector<unsigned int> orig_to_comp = build_compact_map(num_obs, merged_undefs, comp_to_orig);
   size_t num_valid = comp_to_orig.size();
+
+  // Same empty-input contract as local_joincount: never construct VectorWeight
+  // over zero observations (GetNbrStats reads before an empty buffer).
+  if (num_valid == 0) {
+    expand_result(result, num_obs, comp_to_orig, neighbors);
+    return result;
+  }
 
   std::vector<std::vector<double>> comp_data(num_vars, std::vector<double>(num_valid, 0.0));
   for (size_t v = 0; v < num_vars; ++v) {

@@ -23,7 +23,10 @@ describe('localJoinCount()', () => {
     // deterministic local join counts: obs 3 (nbrs 4,5 with data[5]=1) and obs 5
     // (nbrs 3,4 with data[3]=1) each join one 1-valued neighbor.
     expect(result.lisaValues).toEqual([0, 0, 0, 1, 0, 1]);
-    // obs 0/1/4 have lisa=0 (p-value -1); obs 2 is isolated (p-value 0)
+    // Pseudo-p values are seed-dependent draws from the lookup-table permutation
+    // sampler (fixed perm=99), not analytic probabilities; these exact values are
+    // validated by the test. obs 0/1/4 have lisa=0 (p-value -1); obs 2 is
+    // isolated (p-value 0).
     expect(result.pValues).toEqual([-1, -1, 0, 0.42, -1, 0.33]);
     // obs 2 is isolated -> undefined category; all clusters not significant
     expect(result.sigCategories).toEqual([0, 0, 6, 0, 0, 0]);
