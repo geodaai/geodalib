@@ -41,6 +41,28 @@ std::vector<std::vector<double>> distance_weights(const GeometryCollection& geom
                                                   bool is_mile);
 
 /**
+ * @brief Compute kernel weights for a collection of geometries using a fixed bandwidth.
+ *
+ * For each geometry, neighbors located within the given bandwidth are found. Each neighbor's
+ * weight is computed by applying the chosen kernel to the distance ratio z = distance^power / bandwidth,
+ * following Anselin and Rey (2010), table 5.4. Supported kernels: triangular, uniform, epanechnikov,
+ * quartic and gaussian. Each row is stored as an interleaved list of [neighborIndex, weight] pairs,
+ * with the diagonal (self) element appended last.
+ *
+ * @param geoms The geometry collection. If the collection is not a point collection, the centroids of
+ * the geometries are used.
+ * @param bandwidth The fixed bandwidth (in kilometers or miles) within which neighbors are considered.
+ * @param kernel The kernel function to apply. One of: triangular, uniform, epanechnikov, quartic, gaussian.
+ * @param is_mile If true, use mile as the distance unit, otherwise use kilometer.
+ * @param use_kernel_diagonals If true, the diagonal (self) weight is kernel(1.0); otherwise it is 1.0.
+ * @param power The power (or exponent) applied to the distance before normalizing by the bandwidth.
+ * @return std::vector<std::vector<double>> The 2D vector of kernel weights as [neighborIndex, weight] pairs.
+ */
+std::vector<std::vector<double>> kernel_weights(const GeometryCollection& geoms, double bandwidth,
+                                                const std::string& kernel, bool is_mile,
+                                                bool use_kernel_diagonals = false, double power = 1.0);
+
+/**
  * @brief Get the distance thresholds, first threshold guarantee that each observation has at least one neighbor, and
  * the second threshold is the maximum distance between two observations
  *

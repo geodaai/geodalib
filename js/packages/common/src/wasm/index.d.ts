@@ -913,6 +913,24 @@ export interface GeoDaModule {
   ): VecVecUInt;
 
   /**
+   * Compute kernel weights for a collection of geometries using a fixed bandwidth.
+   * @param geometries the collection of geometries
+   * @param bandwidth the fixed bandwidth in the selected unit
+   * @param kernel the kernel function (triangular, uniform, epanechnikov, quartic, gaussian)
+   * @param isMile the unit of distance
+   * @param useKernelDiagonals whether the diagonal (self) weight is kernel(1.0) instead of 1.0
+   * @param power the power (or exponent) applied to the distance before normalizing by the bandwidth
+   */
+  getKernelWeights(
+    geometries: GeometryCollection,
+    bandwidth: Double,
+    kernel: string,
+    isMile: boolean,
+    useKernelDiagonals: boolean,
+    power: Double
+  ): VecVecDouble;
+
+  /**
    * get the distance thresholds of a collection of geometries that guarantee 1 nearest neighbors
    * @param geometries the collection of geometries
    * @param isMile the unit of distance
@@ -1051,6 +1069,42 @@ export interface GeoDaModule {
    * @param lastSeed the last seed
    */
   multivariateLocalGeary(
+    data: VecVecDouble,
+    neighbors: VecVecUInt,
+    undefs: VecVecUInt,
+    significanceCutoff: number,
+    permuations: UnsignedInt,
+    lastSeed: number
+  ): LisaResult;
+
+  /**
+   * Local Join Count statistics
+   * @param data the binary (0/1) data values
+   * @param neighbors the spatial weights matrix that represents neighbor indices: [[1, 2], [0, 2], [0, 1],...]
+   * @param undefs the undefined values
+   * @param significanceCutoff the significance cutoff
+   * @param permuations the number of permutations
+   * @param lastSeed the last seed
+   */
+  localJoinCount(
+    data: VectorDouble,
+    neighbors: VecVecUInt,
+    undefs: VectorUInt,
+    significanceCutoff: number,
+    permuations: UnsignedInt,
+    lastSeed: number
+  ): LisaResult;
+
+  /**
+   * Multivariate Local Join Count statistics
+   * @param data the multiple binary (0/1) data variables
+   * @param neighbors the spatial weights matrix that represents neighbor indices: [[1, 2], [0, 2], [0, 1],...]
+   * @param undefs the undefined values
+   * @param significanceCutoff the significance cutoff
+   * @param permuations the number of permutations
+   * @param lastSeed the last seed
+   */
+  multivariateLocalJoinCount(
     data: VecVecDouble,
     neighbors: VecVecUInt,
     undefs: VecVecUInt,

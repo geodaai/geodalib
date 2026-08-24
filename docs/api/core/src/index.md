@@ -70,6 +70,8 @@
 - [getGeometryCollectionFromPointLayerData](functions/getGeometryCollectionFromPointLayerData.md)
 - [getKernelKnnWeightsFromBinaryGeometries](functions/getKernelKnnWeightsFromBinaryGeometries.md)
 - [getKernelKnnWeightsFromGeomCollection](functions/getKernelKnnWeightsFromGeomCollection.md)
+- [getKernelWeightsFromBinaryGeometries](functions/getKernelWeightsFromBinaryGeometries.md)
+- [getKernelWeightsFromGeomCollection](functions/getKernelWeightsFromGeomCollection.md)
 - [getLength](functions/getLength.md)
 - [getLineCollection](functions/getLineCollection.md)
 - [getMetaFromWeights](functions/getMetaFromWeights.md)
