@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <stdexcept>
 #include <utility>
 
@@ -136,6 +137,25 @@ TEST(WEIGHTS, KERNEL_WEIGHTS_INVALID_KERNEL) {
   std::vector<std::vector<double>> ok =
       geoda::kernel_weights(TEST_POINT_COLLECTION, 200.0, "GAUSSIAN", is_mile);
   EXPECT_EQ(ok.size(), 3);
+}
+
+// A non-positive or non-finite bandwidth must be rejected before any division/bbox work.
+TEST(WEIGHTS, KERNEL_WEIGHTS_INVALID_BANDWIDTH) {
+  bool is_mile = false;
+  EXPECT_THROW(geoda::kernel_weights(TEST_POINT_COLLECTION, 0.0, "gaussian", is_mile),
+               std::invalid_argument);
+  EXPECT_THROW(geoda::kernel_weights(TEST_POINT_COLLECTION, -1.0, "gaussian", is_mile),
+               std::invalid_argument);
+  EXPECT_THROW(geoda::kernel_weights(TEST_POINT_COLLECTION,
+                                     std::numeric_limits<double>::quiet_NaN(), "gaussian", is_mile),
+               std::invalid_argument);
+  EXPECT_THROW(geoda::kernel_weights(TEST_POINT_COLLECTION,
+                                     std::numeric_limits<double>::infinity(), "gaussian", is_mile),
+               std::invalid_argument);
+  // A non-finite power is also rejected.
+  EXPECT_THROW(geoda::kernel_weights(TEST_POINT_COLLECTION, 200.0, "gaussian", is_mile, false,
+                                     std::numeric_limits<double>::quiet_NaN()),
+               std::invalid_argument);
 }
 
 // Verify the distance unit switch: weights must reflect the haversine distance in miles.

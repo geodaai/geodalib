@@ -155,10 +155,16 @@ export async function createWeights({
       isMile: isMile || false,
     };
   } else if (weightsType === 'kernel') {
+    const kernelBandwidth = bandwidth || 0.0;
+    if (!Number.isFinite(kernelBandwidth) || kernelBandwidth <= 0) {
+      throw new Error('bandwidth is required and must be a finite, positive number for kernel weights');
+    }
+    const kernelName = kernel || 'gaussian';
+
     weights = await getKernelWeightsFromGeomCollection({
       geomCollection,
-      bandwidth: bandwidth || 0.0,
-      kernel: kernel || 'gaussian',
+      bandwidth: kernelBandwidth,
+      kernel: kernelName,
       isMile: isMile || false,
       useKernelDiagonals: useKernelDiagonals !== undefined ? useKernelDiagonals : false,
       power: power !== undefined ? power : 1.0,
@@ -167,9 +173,9 @@ export async function createWeights({
     weightsMeta = {
       ...getMetaFromWeights(weights, true),
       type: weightsType,
-      symmetry: 'asymmetric',
-      bandwidth: bandwidth || 0.0,
-      kernel: kernel || 'gaussian',
+      symmetry: 'symmetric',
+      bandwidth: kernelBandwidth,
+      kernel: kernelName,
       power: power !== undefined ? power : 1.0,
       isMile: isMile || false,
     };

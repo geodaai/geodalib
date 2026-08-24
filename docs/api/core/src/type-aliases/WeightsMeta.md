@@ -4,7 +4,7 @@
 
 > **WeightsMeta**: `object`
 
-Defined in: [core/src/weights/weights-stats.ts:7](https://github.com/geodaai/geodalib/blob/a35d8c60f6a8f5c4c9dc279b0d4da4855554d6f7/js/packages/core/src/weights/weights-stats.ts#L7)
+Defined in: [core/src/weights/weights-stats.ts:7](https://github.com/GeoDaCenter/geoda-lib/blob/main/js/packages/core/src/weights/weights-stats.ts#L7)
 
 The meta data for the weights
 

@@ -30,12 +30,14 @@ std::string to_lower(const std::string& str) {
 }
 
 /**
- * @brief Apply a kernel function to the distance ratio z = distance / bandwidth.
+ * @brief Apply a kernel function to the distance ratio z.
  *
- * The kernel functions follow Anselin and Rey (2010), table 5.4.
+ * The kernel functions follow Anselin and Rey (2010), table 5.4. z is the
+ * (possibly power-adjusted) distance ratio; when the power argument differs
+ * from 1.0 it is distance^power / bandwidth, so z is not restricted to [0, 1].
  *
  * @param kernel The name of the kernel. Supported: triangular, uniform, epanechnikov, quartic, gaussian.
- * @param z The distance ratio (distance / bandwidth) in the range [0, 1].
+ * @param z The distance ratio passed to the kernel.
  * @return double The kernel weight.
  */
 double kernel_value(const std::string& kernel, double z) {
@@ -63,6 +65,18 @@ double kernel_value(const std::string& kernel, double z) {
 std::vector<std::vector<double>> geoda::kernel_weights(const GeometryCollection& geoms, double bandwidth,
                                                        const std::string& kernel, bool is_mile,
                                                        bool use_kernel_diagonals, double power) {
+  // validate inputs up-front so invalid values cannot produce a degenerate bbox
+  // or division-by-zero in the WASM runtime
+  if (!(bandwidth > 0.0) || !std::isfinite(bandwidth)) {
+    throw std::invalid_argument("bandwidth must be a finite, positive number");
+  }
+  if (!std::isfinite(power)) {
+    throw std::invalid_argument("power must be finite");
+  }
+  // normalize the kernel name so it is validated up-front
+  const std::string k = to_lower(kernel);
+  kernel_value(k, 0.0);  // throws std::invalid_argument for unsupported kernels
+
   // create rtree
   std::vector<point_val> pts;
   size_t num_geoms = geoms.size();
@@ -71,9 +85,6 @@ std::vector<std::vector<double>> geoda::kernel_weights(const GeometryCollection&
     pts.emplace_back(pt, i);
   }
   rtree_point_t rtree(pts);
-
-  // normalize the kernel name once so it is validated up-front
-  const std::string k = to_lower(kernel);
 
   std::vector<std::vector<double>> result(num_geoms);
 

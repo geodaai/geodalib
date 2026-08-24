@@ -179,6 +179,44 @@ describe('Kernel Weights', () => {
     expect(result[0][3]).toBe(1);
   });
 
+  it('should reject invalid bandwidth, kernel, and power inputs', async () => {
+    const base = {
+      binaryGeometryType,
+      binaryGeometries,
+      kernel: 'gaussian',
+    };
+
+    await expect(
+      getKernelWeightsFromBinaryGeometries({ ...base, bandwidth: 0 })
+    ).rejects.toThrow('bandwidth must be a finite, positive number');
+
+    await expect(
+      getKernelWeightsFromBinaryGeometries({ ...base, bandwidth: -10 })
+    ).rejects.toThrow('bandwidth must be a finite, positive number');
+
+    await expect(
+      getKernelWeightsFromBinaryGeometries({ ...base, bandwidth: Number.NaN })
+    ).rejects.toThrow('bandwidth must be a finite, positive number');
+
+    await expect(
+      getKernelWeightsFromBinaryGeometries({ ...base, bandwidth: 180, kernel: 'not-a-kernel' })
+    ).rejects.toThrow('Unsupported kernel: not-a-kernel');
+
+    await expect(
+      getKernelWeightsFromBinaryGeometries({ ...base, bandwidth: 180, power: Number.POSITIVE_INFINITY })
+    ).rejects.toThrow('power must be finite');
+  });
+
+  it('should accept case-insensitive kernel names', async () => {
+    const result = await getKernelWeightsFromBinaryGeometries({
+      bandwidth: 111.16185827369097,
+      kernel: 'GAUSSIAN',
+      binaryGeometryType,
+      binaryGeometries,
+    });
+    expect(result).toHaveLength(5);
+  });
+
   it('should create kernel weights via createWeights', async () => {
     const { weights, weightsMeta } = await createWeights({
       weightsType: 'kernel',
@@ -189,9 +227,30 @@ describe('Kernel Weights', () => {
 
     expect(weights).toHaveLength(5);
     expect(weightsMeta.type).toBe('kernel');
-    expect(weightsMeta.symmetry).toBe('asymmetric');
+    // Fixed-bandwidth kernel weights are symmetric: the neighbor relation is
+    // d(i,j) <= bandwidth and the weight kernel(z_ij) = kernel(z_ji).
+    expect(weightsMeta.symmetry).toBe('symmetric');
     expect(weightsMeta.bandwidth).toBe(111.16185827369097);
     expect(weightsMeta.kernel).toBe('gaussian');
     expect(weightsMeta.numberOfObservations).toBe(5);
+  });
+
+  it('should require a positive finite bandwidth via createWeights', async () => {
+    await expect(
+      createWeights({
+        weightsType: 'kernel',
+        kernel: 'gaussian',
+        geometries: binaryGeometries,
+      })
+    ).rejects.toThrow('bandwidth is required');
+
+    await expect(
+      createWeights({
+        weightsType: 'kernel',
+        bandwidth: 0,
+        kernel: 'gaussian',
+        geometries: binaryGeometries,
+      })
+    ).rejects.toThrow('bandwidth is required');
   });
 });

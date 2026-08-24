@@ -11,6 +11,37 @@ import {
 import { initWASM } from '../init';
 
 /**
+ * The kernel functions supported by the kernel weights APIs.
+ */
+const SUPPORTED_KERNELS = ['triangular', 'uniform', 'epanechnikov', 'quartic', 'gaussian'];
+
+/**
+ * Normalize and validate kernel weights inputs before calling into WASM so
+ * invalid values cannot trigger an abort/exception inside the C++ runtime.
+ */
+function validateKernelWeightsInput({
+  bandwidth,
+  kernel,
+  power,
+}: {
+  bandwidth: number;
+  kernel: string;
+  power: number;
+}) {
+  if (!Number.isFinite(bandwidth) || bandwidth <= 0) {
+    throw new Error('bandwidth must be a finite, positive number');
+  }
+  const normalizedKernel = kernel.toLowerCase();
+  if (!SUPPORTED_KERNELS.includes(normalizedKernel)) {
+    throw new Error(`Unsupported kernel: ${kernel}`);
+  }
+  if (!Number.isFinite(power)) {
+    throw new Error('power must be finite');
+  }
+  return normalizedKernel;
+}
+
+/**
  * Type of Kernel weights from binary geometries arguments.
  */
 type KernelWeightsFromBinaryGeometriesProps = {
@@ -77,13 +108,15 @@ export async function getKernelWeightsFromGeomCollection({
   useKernelDiagonals?: boolean;
   power?: number;
 }): Promise<number[][]> {
+  const normalizedKernel = validateKernelWeightsInput({ bandwidth, kernel, power });
+
   const wasmInstance = await initWASM();
   const weights: number[][] = [];
   if (geomCollection) {
     const result = wasmInstance.getKernelWeights(
       geomCollection,
       bandwidth,
-      kernel,
+      normalizedKernel,
       isMile,
       useKernelDiagonals,
       power
