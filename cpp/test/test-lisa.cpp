@@ -89,9 +89,12 @@ TEST(LISA, MULTIVARIATE_JOIN_COUNT_DETERMINISTIC) {
 TEST(LISA, LOCAL_JOIN_COUNT_UNDEFINED_NEIGHBOR_NO_HANG) {
   // Regression: the "complete" permutation sampler drew exactly numNeighbors valid
   // candidates and rejected undefined ones, so with a non-zero local join count and
-  // an undefined neighbor it could loop forever. The lookup-table path must not hang.
-  // obs 1 has neighbors {0, 2} with obs 2 undefined: it still gets a non-zero join
-  // count from obs 0, but only one valid permutation candidate remains.
+  // an undefined neighbor it could loop forever. The wrapper compacts undefined
+  // observations away, so the lookup-table path samples only valid candidates and
+  // must not hang. obs 1 has neighbors {0, 2} with obs 2 undefined: after
+  // compaction each valid observation has a single valid permutation candidate
+  // (the other observation), so the permuted join count always equals the observed
+  // one and the pseudo-p is deterministically (0 + 1) / (99 + 1) = 0.01.
   std::vector<double> data = {1, 1, 0};
   std::vector<unsigned int> undefs = {0, 0, 1};
 
@@ -104,15 +107,16 @@ TEST(LISA, LOCAL_JOIN_COUNT_UNDEFINED_NEIGHBOR_NO_HANG) {
   EXPECT_DOUBLE_EQ(result.lisa_vec[1], 1.0);
   EXPECT_DOUBLE_EQ(result.lisa_vec[2], 0.0);
 
-  EXPECT_NEAR(result.sig_local_vec[0], 0.44, 1e-9);
+  EXPECT_NEAR(result.sig_local_vec[0], 0.01, 1e-9);
   EXPECT_NEAR(result.sig_local_vec[1], 0.01, 1e-9);
+  EXPECT_DOUBLE_EQ(result.sig_local_vec[2], 0.0);
 
   // significance categories: 2 = p <= 0.01, 6 = undefined
-  EXPECT_EQ(result.sig_cat_vec[0], 0);
+  EXPECT_EQ(result.sig_cat_vec[0], 2);
   EXPECT_EQ(result.sig_cat_vec[1], 2);
   EXPECT_EQ(result.sig_cat_vec[2], 6);
 
-  EXPECT_EQ(result.cluster_vec[0], 0);
+  EXPECT_EQ(result.cluster_vec[0], 1);
   EXPECT_EQ(result.cluster_vec[1], 1);
   EXPECT_EQ(result.cluster_vec[2], 0);
 }
