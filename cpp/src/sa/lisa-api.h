@@ -115,6 +115,21 @@ LisaResult local_multivariate_geary(const std::vector<std::vector<double>>& data
                                     const std::vector<std::vector<unsigned int>>& undefs, double significance_cutoff,
                                     unsigned int perm, int last_seed);
 
+LisaResult local_moran_eb(const std::vector<double>& event_data, const std::vector<double>& base_data,
+                          const std::vector<std::vector<unsigned int>>& neighbors,
+                          const std::vector<unsigned int>& undefs, double significance_cutoff, unsigned int perm,
+                          int last_seed);
+
+LisaResult local_joincount(const std::vector<double>& data,
+                           const std::vector<std::vector<unsigned int>>& neighbors,
+                           const std::vector<unsigned int>& undefs, double significance_cutoff, unsigned int perm,
+                           int last_seed);
+
+LisaResult local_multijoincount(const std::vector<std::vector<double>>& data,
+                                const std::vector<std::vector<unsigned int>>& neighbors,
+                                const std::vector<std::vector<unsigned int>>& undefs, double significance_cutoff,
+                                unsigned int perm, int last_seed);
+
 LisaResult quantile_lisa(int k, int quantile, const std::vector<double>& data,
                          const std::vector<std::vector<unsigned int>>& neighbors,
                          const std::vector<unsigned int>& undefs, double significance_cutoff, unsigned int perm,
@@ -124,6 +139,11 @@ BatchLisaResult batch_local_moran(const std::vector<std::vector<double>>& data,
                                   const std::vector<std::vector<unsigned int>>& neighbors,
                                   const std::vector<std::vector<unsigned int>>& undefs, double significance_cutoff,
                                   unsigned int perm, int last_seed);
+LisaResult local_multiquantilelisa(const std::vector<int>& k_s, const std::vector<int>& quantile_s,
+                                   const std::vector<std::vector<double>>& data,
+                                   const std::vector<std::vector<unsigned int>>& neighbors,
+                                   const std::vector<std::vector<unsigned int>>& undefs, double significance_cutoff,
+                                   unsigned int perm, int last_seed);
 }  // namespace geoda
 
 #endif  // GEODA_LOCAL_STATISTICS_H
