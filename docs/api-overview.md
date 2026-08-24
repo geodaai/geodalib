@@ -27,7 +27,7 @@ outline: deep
 
 ### Cartogram
 
-- [Cartogram](/api/core/src/functions/cartogram)
+- [Cartogram](/api/core/src/functions/getCartogram)
 
 
 
@@ -59,8 +59,9 @@ outline: deep
 
 ### Kernel Weights
 
-- Kernel Weights
-- Kernel K-Nearest Neighbors Weights
+- [Kernel Weights](/api/core/src/functions/getKernelWeightsFromBinaryGeometries)
+
+
 
 
 
@@ -140,7 +141,7 @@ outline: deep
 
 ### Other Operations
 
-- [Thiessen Polygons](/api/core/src/functions/thiessenPolygons)
+- [Thiessen Polygons](/api/core/src/functions/getThiessenPolygons)
 - [Minimum Spanning Tree](/api/core/src/functions/getMinimumSpanningTree)
 
 

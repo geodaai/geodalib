@@ -890,6 +890,24 @@ export interface GeoDaModule {
   ): VecVecUInt;
 
   /**
+   * Compute kernel weights for a collection of geometries using a fixed bandwidth.
+   * @param geometries the collection of geometries
+   * @param bandwidth the fixed bandwidth in the selected unit
+   * @param kernel the kernel function (triangular, uniform, epanechnikov, quartic, gaussian)
+   * @param isMile the unit of distance
+   * @param useKernelDiagonals whether the diagonal (self) weight is kernel(1.0) instead of 1.0
+   * @param power the power (or exponent) applied to the distance before normalizing by the bandwidth
+   */
+  getKernelWeights(
+    geometries: GeometryCollection,
+    bandwidth: Double,
+    kernel: string,
+    isMile: boolean,
+    useKernelDiagonals: boolean,
+    power: Double
+  ): VecVecDouble;
+
+  /**
    * get the distance thresholds of a collection of geometries that guarantee 1 nearest neighbors
    * @param geometries the collection of geometries
    * @param isMile the unit of distance

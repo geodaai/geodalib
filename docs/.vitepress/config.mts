@@ -28,6 +28,7 @@ export default defineConfig({
         items: [
           { text: 'Get Started', link: '/get-started' },
           { text: 'Architecture', link: '/architecture' },
+          { text: 'Adding a New Function', link: '/adding-a-new-function' },
         ],
       },
       {

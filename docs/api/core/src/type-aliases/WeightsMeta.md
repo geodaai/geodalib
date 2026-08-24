@@ -4,11 +4,17 @@
 
 > **WeightsMeta**: `object`
 
-Defined in: [core/src/weights/weights-stats.ts:4](https://github.com/GeoDaCenter/geoda-lib/blob/04471ecd75dbfe13a0a0fbff4b6e7d785ad0f8e7/js/packages/core/src/weights/weights-stats.ts#L4)
+Defined in: [core/src/weights/weights-stats.ts:7](https://github.com/GeoDaCenter/geoda-lib/blob/main/js/packages/core/src/weights/weights-stats.ts#L7)
 
 The meta data for the weights
 
 ## Type declaration
+
+### bandwidth?
+
+> `optional` **bandwidth**: `number`
+
+The bandwidth for kernel weights
 
 ### distanceMetric?
 
@@ -45,6 +51,12 @@ Whether the distance is in miles
 > `optional` **k**: `number`
 
 The k value for k-nearest neighbors
+
+### kernel?
+
+> `optional` **kernel**: `string`
+
+The kernel function for kernel weights
 
 ### maxNeighbors
 
@@ -88,6 +100,12 @@ The order of the weights
 
 The percentage of non-zero neighbors
 
+### power?
+
+> `optional` **power**: `number`
+
+The power (or exponent) applied to the distance before normalizing by the bandwidth
+
 ### symmetry?
 
 > `optional` **symmetry**: `"symmetric"` \| `"asymmetric"`
@@ -102,6 +120,6 @@ The threshold for the weights
 
 ### type?
 
-> `optional` **type**: `"knn"` \| `"threshold"` \| `"queen"` \| `"rook"`
+> `optional` **type**: `"knn"` \| `"threshold"` \| `"queen"` \| `"rook"` \| `"kernel"`
 
 The type of the weights
