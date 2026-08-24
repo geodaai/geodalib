@@ -94,6 +94,8 @@ EMSCRIPTEN_BINDINGS(wasmgeoda) {
   emscripten::function("bivariateLocalMoran", &geoda::local_bivariate_moran);
   emscripten::function("localGeary", &geoda::local_geary);
   emscripten::function("multivariateLocalGeary", &geoda::local_multivariate_geary);
+  emscripten::function("localJoinCount", &geoda::local_joincount);
+  emscripten::function("multivariateLocalJoinCount", &geoda::local_multijoincount);
   emscripten::function("quantileLisa", &geoda::quantile_lisa);
 
   emscripten::function("quantileBreaks", &geoda::quantile_breaks);

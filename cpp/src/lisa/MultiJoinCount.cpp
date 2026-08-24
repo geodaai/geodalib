@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "../weights/geoda-weight.h"
+#include "../utils/rnd.h"
 #include "./GeoDaSet.h"
 
 MultiJoinCount::MultiJoinCount(int num_obs, GeoDaWeight *w, const std::vector<std::vector<double> > &_data,
@@ -37,12 +38,14 @@ MultiJoinCount::MultiJoinCount(int num_obs, GeoDaWeight *w, const std::vector<st
 
   std::vector<bool> undef_merge(num_obs, false);
   if (_undefs.size() > 0) {
+    // Merge the per-variable undefined flags: an observation is undefined if it is
+    // undefined in any variable. Rows may be shorter than num_obs, so only consult
+    // entries that exist.
     for (int i = 0; i < num_obs; ++i) {
       for (size_t j = 0; j < _undefs.size(); ++j) {
-        if (_undefs[j].size() >= num_obs) {
-          break;
+        if (i < static_cast<int>(_undefs[j].size())) {
+          undef_merge[i] = undef_merge[i] || _undefs[j][i];
         }
-        undef_merge[i] = undef_merge[i] || _undefs[j][i];
       }
     }
   }
@@ -71,7 +74,12 @@ void MultiJoinCount::ComputeLoalSA() {
 
   // bivariate local join count -- colocation and no-colocation
   // multivariate local join count -- colocation only
-  if (nocolocation) {
+  // The no-colocation branch is only defined for bivariate input: with three or
+  // more variables it would use only data[0] and data[1], silently dropping the
+  // remaining variables. For a multivariate no-colocation (nocolocation && num_vars
+  // > 2) there is no standard statistic, so fall through to the colocation branch,
+  // where zz[i] > 0 is false everywhere and every local join count is 0.
+  if (nocolocation && num_vars == 2) {
     // here only bivariate apply to no-colocation case
     // why? think about if add a third variable, it would break
     // the no-colocation case!
