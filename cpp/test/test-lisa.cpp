@@ -56,12 +56,14 @@ TEST(LISA, MULTIVARIATE_QUANTILE_LISA_SHORT_UNDEF_ROW) {
 }
 
 TEST(LISA, QUANTILE_BREAKS_EXCLUDE_UNDEFINED) {
-  // data = {1,2,3,4,100} with obs 4 undefined. quantile_breaks must exclude the
-  // undefined 100 from the cut-point computation, matching the breaks computed on
-  // the defined-only subset {1,2,3,4}: {1.5, 2.5, 3.5} for k=4. (Regression: the
-  // undef vector was built but never consulted, so the 100 skewed the cuts.)
-  std::vector<double> data = {1, 2, 3, 4, 100};
-  std::vector<unsigned int> undef = {0, 0, 0, 0, 1};
+  // data is deliberately UNSORTED with obs 4 undefined. quantile_breaks must
+  // exclude the undefined 100 from the cut-point computation AND sort the
+  // defined-only subset first, matching the breaks on {1,2,3,4}: {1.5, 2.5, 3.5}
+  // for k=4. (Regression: the undef vector was built but never consulted, so the
+  // 100 skewed the cuts; a later edit dropped the std::sort, which also broke the
+  // cuts on unsorted input.)
+  std::vector<double> data = {4, 100, 2, 1, 3};
+  std::vector<unsigned int> undef = {0, 1, 0, 0, 0};
   std::vector<double> breaks = geoda::quantile_breaks(4, data, undef);
   ASSERT_EQ(breaks.size(), 3u);
   EXPECT_NEAR(breaks[0], 1.5, 1e-9);

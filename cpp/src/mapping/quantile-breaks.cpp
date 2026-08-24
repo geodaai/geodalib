@@ -52,6 +52,9 @@ std::vector<double> geoda::quantile_breaks(int num_cats, const std::vector<doubl
     if (undef[i]) continue;
     var.push_back(std::make_pair(data[i], i));
   }
+  // percentile() assumes ascending order (it reads v[0], v[N-1], and interpolates
+  // adjacent entries), so var must be sorted before the cut points are computed.
+  std::sort(var.begin(), var.end(), geoda::dbl_int_pair_cmp_less);
 
   std::vector<double> breaks(num_cats - 1);
   if (var.empty()) {
