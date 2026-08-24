@@ -39,25 +39,26 @@ std::string to_lower(const std::string& str) {
  * applied), the compact-support kernels must clamp to 0 to avoid producing
  * negative or non-zero weights outside their support.
  *
- * @param kernel The name of the kernel. Supported: triangular, uniform, epanechnikov, quartic, gaussian.
+ * @param kernel The lowercase name of the kernel. Supported: triangular, uniform, epanechnikov, quartic, gaussian.
  * @param z The distance ratio (distance / bandwidth).
  * @return double The kernel weight.
  */
 double kernel_value(const std::string& kernel, double z) {
-  const std::string k = to_lower(kernel);
-  if (k == "triangular") {
+  // `kernel` must already be lowercased by the caller; avoid re-lowercasing
+  // inside the inner neighbor loop.
+  if (kernel == "triangular") {
     return (z > 1.0) ? 0.0 : 1.0 - z;
   }
-  if (k == "uniform") {
+  if (kernel == "uniform") {
     return (z > 1.0) ? 0.0 : 0.5;
   }
-  if (k == "epanechnikov") {
+  if (kernel == "epanechnikov") {
     return (z > 1.0) ? 0.0 : (3.0 / 4.0) * (1.0 - z * z);
   }
-  if (k == "quartic") {
+  if (kernel == "quartic") {
     return (z > 1.0) ? 0.0 : (15.0 / 16.0) * std::pow(1.0 - z * z, 2.0);
   }
-  if (k == "gaussian") {
+  if (kernel == "gaussian") {
     return (1.0 / std::sqrt(2.0 * geoda::pi)) * std::exp(-z * z / 2.0);
   }
   throw std::invalid_argument("Unsupported kernel: " + kernel);
@@ -123,9 +124,15 @@ std::vector<std::vector<double>> geoda::kernel_knn_weights(const GeometryCollect
     // normalize and apply kernel to each neighbor pair
     for (size_t j = 0; j + 1 < raw_weights[i].size(); j += 2) {
       double d = raw_weights[i][j + 1];
-      // inverse distance weighting: replace the distance with 1 / distance^power
-      if (is_inverse) d = 1.0 / std::pow(d, power);
-      double z = (b > 0.0) ? d / b : 0.0;
+      double z = 0.0;
+      if (is_inverse) {
+        // inverse distance weighting: replace the distance with 1 / distance^power.
+        // Coincident points (d == 0) would give an infinite weight; use the
+        // maximum kernel weight (z == 0.0) for them instead.
+        if (d > 0.0) z = (b > 0.0) ? (1.0 / std::pow(d, power)) / b : 0.0;
+      } else {
+        z = (b > 0.0) ? d / b : 0.0;
+      }
       result[i].push_back(raw_weights[i][j]);
       result[i].push_back(kernel_value(kern, z));
     }

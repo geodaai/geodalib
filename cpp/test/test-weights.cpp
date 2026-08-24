@@ -102,6 +102,33 @@ TEST(WEIGHTS, KERNEL_KNN_WEIGHTS_INVERSE_TRUNCATES_SUPPORT) {
   }
 }
 
+TEST(WEIGHTS, KERNEL_KNN_WEIGHTS_INVERSE_COINCIDENT_POINTS) {
+  // Two coincident points plus one distant point. With inverse distance weighting
+  // and k=2 the coincident neighbor has d == 0.0 while the bandwidth (> 0) comes
+  // from the distant neighbor; the coincident point must receive the maximum
+  // kernel weight (z == 0.0) instead of an infinite/non-finite weight.
+  geoda::PointCollection pts(std::vector<double>{0, 0, 0.002}, std::vector<double>{0, 0, 0.002},
+                             std::vector<unsigned int>{0, 1, 2}, std::vector<unsigned int>{1, 1, 1});
+  std::vector<std::vector<double>> result =
+      geoda::kernel_knn_weights(pts, 2, "triangular", false, false, 1.0, true, true);
+  ASSERT_EQ(result.size(), 3);
+
+  for (size_t i = 0; i < result.size(); ++i) {
+    auto pairs = to_pairs(result[i]);
+    ASSERT_EQ(pairs.size(), 3u);  // 2 neighbors + self
+    for (const auto& p : pairs) {
+      EXPECT_TRUE(std::isfinite(p.second));
+      EXPECT_GE(p.second, 0.0);
+      if (p.first == static_cast<double>(i)) {
+        EXPECT_EQ(p.second, 1.0);  // self weight stays 1.0
+      } else if (p.second > 0.0) {
+        // only the coincident neighbor may carry the maximum weight (z == 0.0)
+        EXPECT_EQ(p.second, 1.0);
+      }
+    }
+  }
+}
+
 TEST(WEIGHTS, KERNEL_KNN_WEIGHTS_GLOBAL_UNIFORM) {
   bool is_mile = false;
   unsigned int k = 2;
