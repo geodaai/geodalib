@@ -51,4 +51,32 @@ TEST(WEIGHTS, NEIGHBOR_MATCH_TEST) {
   ASSERT_EQ(result.size(), 2u);  // Cardinality + Probability
   ASSERT_EQ(result[0].size(), 3u);
   ASSERT_EQ(result[1].size(), 3u);
+  // k = 1: every observation's attribute 1-NN matches its spatial 1-NN
+  EXPECT_EQ(result[0][0], 1.0);
+  EXPECT_EQ(result[0][1], 1.0);
+  EXPECT_EQ(result[0][2], 1.0);
+  // P(X = 1) = C(1,1) * C(1,0) / C(2,1) = 0.5
+  EXPECT_NEAR(result[1][0], 0.5, 1e-9);
+  EXPECT_NEAR(result[1][1], 0.5, 1e-9);
+  EXPECT_NEAR(result[1][2], 0.5, 1e-9);
+
+  // k = 2: both neighbor draws are the other two observations, so the overlap is
+  // always 2 and P(X = 2) = C(2,2) * C(0,0) / C(2,2) = 1
+  std::vector<std::vector<double>> result2 =
+      geoda::neighbor_match_test(TEST_POINT_COLLECTION, 2, data, "standardize", "euclidean", false);
+  ASSERT_EQ(result2.size(), 2u);
+  ASSERT_EQ(result2[0].size(), 3u);
+  ASSERT_EQ(result2[1].size(), 3u);
+  EXPECT_EQ(result2[0][0], 2.0);
+  EXPECT_EQ(result2[0][1], 2.0);
+  EXPECT_EQ(result2[0][2], 2.0);
+  EXPECT_NEAR(result2[1][0], 1.0, 1e-9);
+  EXPECT_NEAR(result2[1][1], 1.0, 1e-9);
+  EXPECT_NEAR(result2[1][2], 1.0, 1e-9);
+
+  // a variable shorter than the geometry collection is rejected with an empty result
+  std::vector<std::vector<double>> bad = {{1.0, 2.0, 3.0}, {1.0, 2.0}};
+  std::vector<std::vector<double>> empty =
+      geoda::neighbor_match_test(TEST_POINT_COLLECTION, 1, bad, "standardize", "euclidean", false);
+  EXPECT_TRUE(empty.empty());
 }

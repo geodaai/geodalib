@@ -63,6 +63,10 @@ std::vector<std::vector<double>> geoda::neighbor_match_test(const GeometryCollec
   size_t num_obs = geoms.size();
   bool manhattan = to_lower(dist_type) == "manhattan";
 
+  if (num_obs == 0 || k == 0) {
+    return {};
+  }
+
   std::vector<std::vector<unsigned int>> spatial_nbrs = geoda::knearest_neighbors(geoms, k);
 
   std::vector<std::vector<double>> scaled;
@@ -71,6 +75,16 @@ std::vector<std::vector<double>> geoda::neighbor_match_test(const GeometryCollec
   }
 
   size_t num_vars = scaled.size();
+  if (num_vars == 0) {
+    return {};
+  }
+  // every variable must hold one value per observation
+  for (size_t v = 0; v < num_vars; ++v) {
+    if (scaled[v].size() != num_obs) {
+      return {};
+    }
+  }
+
   std::vector<std::vector<unsigned int>> var_nbrs(num_obs);
   for (size_t i = 0; i < num_obs; ++i) {
     std::vector<std::pair<double, unsigned int>> dists;
@@ -83,9 +97,12 @@ std::vector<std::vector<double>> geoda::neighbor_match_test(const GeometryCollec
       }
       dists.emplace_back(attribute_distance(a, b, manhattan), static_cast<unsigned int>(j));
     }
+    // tie-break equal distances by the candidate index so the neighbor choice
+    // (and therefore the overlap cardinality) is deterministic across builds
     std::sort(dists.begin(), dists.end(),
               [](const std::pair<double, unsigned int>& x, const std::pair<double, unsigned int>& y) {
-                return x.first < y.first;
+                if (x.first != y.first) return x.first < y.first;
+                return x.second < y.second;
               });
     unsigned int take = k < dists.size() ? k : static_cast<unsigned int>(dists.size());
     for (unsigned int m = 0; m < take; ++m) {
@@ -104,11 +121,18 @@ std::vector<std::vector<double>> geoda::neighbor_match_test(const GeometryCollec
     val_cnbrs[i] = static_cast<double>(common);
   }
 
-  std::vector<double> pval_dict(k, -1.0);
+  // Hypergeometric P(X = v) for the overlap of two k-sized neighbor draws from
+  // (rows - 1) candidates (self excluded): C(k, v) * C(rows - 1 - k, k - v) /
+  // C(rows - 1, k). One entry per cardinality 0..k; combinations outside the
+  // hypergeometric support have probability 0.
+  std::vector<double> pval_dict(k + 1, 0.0);
   unsigned int rows = static_cast<unsigned int>(num_obs);
-  for (unsigned int v = 1; v < k; ++v) {
-    if (rows > k) {
-      pval_dict[v] = combinatorial(k, v) * combinatorial(rows - k - 1, k - v) / combinatorial(rows - 1, k);
+  if (rows > k) {
+    unsigned int universe = rows - 1;
+    for (unsigned int v = 0; v <= k; ++v) {
+      if (k - v <= universe - k) {
+        pval_dict[v] = combinatorial(k, v) * combinatorial(universe - k, k - v) / combinatorial(universe, k);
+      }
     }
   }
   std::vector<double> val_p(num_obs, -1.0);
