@@ -10,4 +10,5 @@ export * from './sa/local-moran-eb';
 export * from './sa/local-joincount';
 export * from './sa/local-bijoincount';
 export * from './sa/quantile-lisa';
+export * from './sa/quantile-lisa-multi';
 export * from './sa/spatial-lag';

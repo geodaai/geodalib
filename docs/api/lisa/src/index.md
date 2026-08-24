@@ -15,6 +15,8 @@
 - [LocalMoranProps](type-aliases/LocalMoranProps.md)
 - [LocalMoranResult](type-aliases/LocalMoranResult.md)
 - [MultivariateLocalGearyProps](type-aliases/MultivariateLocalGearyProps.md)
+- [MultivariateQuantileLisaProps](type-aliases/MultivariateQuantileLisaProps.md)
+- [MultivariateQuantileLisaResult](type-aliases/MultivariateQuantileLisaResult.md)
 - [MultivariateLocalJoinCountProps](type-aliases/MultivariateLocalJoinCountProps.md)
 - [QuantileLisaProps](type-aliases/QuantileLisaProps.md)
 
@@ -30,6 +32,7 @@
 - [localMoran](functions/localMoran.md)
 - [localMoranEB](functions/localMoranEB.md)
 - [multivariateLocalGeary](functions/multivariateLocalGeary.md)
+- [multivariateQuantileLisa](functions/multivariateQuantileLisa.md)
 - [multivariateLocalJoinCount](functions/multivariateLocalJoinCount.md)
 - [quantileLisa](functions/quantileLisa.md)
 - [resetWASM](functions/resetWASM.md)

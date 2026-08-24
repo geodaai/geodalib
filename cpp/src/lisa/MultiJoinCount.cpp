@@ -36,20 +36,10 @@ MultiJoinCount::MultiJoinCount(int num_obs, GeoDaWeight *w, const std::vector<st
 
   num_vars = data.size();
 
-  std::vector<bool> undef_merge(num_obs, false);
-  if (_undefs.size() > 0) {
-    // Merge the per-variable undefined flags: an observation is undefined if it is
-    // undefined in any variable. Rows may be shorter than num_obs, so only consult
-    // entries that exist.
-    for (int i = 0; i < num_obs; ++i) {
-      for (size_t j = 0; j < _undefs.size(); ++j) {
-        if (i < static_cast<int>(_undefs[j].size())) {
-          undef_merge[i] = undef_merge[i] || _undefs[j][i];
-        }
-      }
-    }
-  }
-  undefs = undef_merge;
+  // The base LISA constructor (the vector<vector<bool>> overload) already merges
+  // the per-variable undefined flags into the undefs member (an observation is
+  // undefined if it is undefined in any variable, tolerating rows shorter than
+  // num_obs), so no re-merge is needed here.
 
   zz.resize(num_obs, 1);
   for (int i = 0; i < num_obs; i++) {

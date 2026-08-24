@@ -1155,6 +1155,28 @@ export interface GeoDaModule {
     lastSeed: number
   ): LisaResult;
 
+  /**
+   * Multivariate Local Quantile LISA statistics
+   * @param kValues the number of quantile breaks per variable
+   * @param quantileValues the quantile class per variable
+   * @param data the multiple data variables
+   * @param neighbors the spatial weights matrix that represents neighbor indices: [[1, 2], [0, 2], [0, 1],...]
+   * @param undefs the undefined values
+   * @param significanceCutoff the significance cutoff
+   * @param permuations the number of permutations
+   * @param lastSeed the last seed
+   */
+  multivariateQuantileLisa(
+    kValues: VectorInt,
+    quantileValues: VectorInt,
+    data: VecVecDouble,
+    neighbors: VecVecUInt,
+    undefs: VecVecUInt,
+    significanceCutoff: number,
+    permuations: UnsignedInt,
+    lastSeed: number
+  ): LisaResult;
+
   // test for dotProduct
   dotProduct(x: VectorDouble, y: VectorDouble): number;
 

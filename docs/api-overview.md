@@ -64,6 +64,8 @@ outline: deep
 
 
 
+
+
 ## Spatial Autocorrelation Analysis
 
 
@@ -130,11 +132,11 @@ outline: deep
 
 ### Geometric Operations
 
-- [Centroid](/api/core/src/functions/getCentroids)
-- [Buffer](/api/core/src/functions/getBuffers)
 - [Area](/api/core/src/functions/getArea)
 - [Length](/api/core/src/functions/getLength)
 - [Perimeter](/api/core/src/functions/getPerimeter)
+- [Centroid](/api/core/src/functions/getCentroids)
+- [Buffer](/api/core/src/functions/getBuffers)
 - [Spatial Dissolve](/api/core/src/functions/spatialDissolve)
 - [Spatial Join](/api/core/src/functions/spatialJoin)
 
