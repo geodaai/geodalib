@@ -3,6 +3,7 @@
 
 #include <gtest/gtest.h>
 
+#include "mapping/mapping.h"
 #include "sa/lisa-api.h"
 
 // Points at (0,0), (1,1), (2,2) form a 1D chain: 0 <-> 1 <-> 2.
@@ -52,6 +53,32 @@ TEST(LISA, MULTIVARIATE_QUANTILE_LISA_SHORT_UNDEF_ROW) {
   EXPECT_DOUBLE_EQ(result.lisa_vec[0], 0.0);
   EXPECT_NE(result.sig_cat_vec[1], 6);
   EXPECT_NE(result.sig_cat_vec[2], 6);
+}
+
+TEST(LISA, QUANTILE_BREAKS_EXCLUDE_UNDEFINED) {
+  // data = {1,2,3,4,100} with obs 4 undefined. quantile_breaks must exclude the
+  // undefined 100 from the cut-point computation, matching the breaks computed on
+  // the defined-only subset {1,2,3,4}: {1.5, 2.5, 3.5} for k=4. (Regression: the
+  // undef vector was built but never consulted, so the 100 skewed the cuts.)
+  std::vector<double> data = {1, 2, 3, 4, 100};
+  std::vector<unsigned int> undef = {0, 0, 0, 0, 1};
+  std::vector<double> breaks = geoda::quantile_breaks(4, data, undef);
+  ASSERT_EQ(breaks.size(), 3u);
+  EXPECT_NEAR(breaks[0], 1.5, 1e-9);
+  EXPECT_NEAR(breaks[1], 2.5, 1e-9);
+  EXPECT_NEAR(breaks[2], 3.5, 1e-9);
+}
+
+TEST(LISA, QUANTILE_BREAKS_ALL_UNDEFINED_NO_CRASH) {
+  // All observations undefined: no defined cut points exist. Return a degenerate
+  // all-zero break vector instead of indexing into an empty percentile input.
+  std::vector<double> data = {1, 2, 3};
+  std::vector<unsigned int> undef = {1, 1, 1};
+  std::vector<double> breaks = geoda::quantile_breaks(4, data, undef);
+  ASSERT_EQ(breaks.size(), 3u);
+  EXPECT_DOUBLE_EQ(breaks[0], 0.0);
+  EXPECT_DOUBLE_EQ(breaks[1], 0.0);
+  EXPECT_DOUBLE_EQ(breaks[2], 0.0);
 }
 
 TEST(LISA, MULTIVARIATE_QUANTILE_LISA_INVALID_INPUTS) {

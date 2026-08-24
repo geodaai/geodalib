@@ -11,13 +11,17 @@ describe('multivariateQuantileLisa()', () => {
   });
 
   it('should calculate multivariate quantile LISA statistics', async () => {
+    // Both variables take the same values, so obs 1 and 2 (adjacent, both in the
+    // second quantile class) form a colocation: zz=1 for each, and each has the
+    // other as a 1-valued neighbor, so lisa=1. Exact arrays lock the WASM
+    // binding/result mapping (and the quantile breaks) against regressions.
     const data = [
       [1, 2, 3, 4, 5, 6],
-      [6, 5, 4, 3, 2, 1],
+      [1, 2, 3, 4, 5, 6],
     ];
     const neighbors = [[1], [0, 2], [1, 3], [2, 4], [3, 5], [4]];
     const kValues = [4, 4];
-    const quantileValues = [1, 2];
+    const quantileValues = [2, 2];
 
     const result = await multivariateQuantileLisa({
       kValues,
@@ -28,7 +32,11 @@ describe('multivariateQuantileLisa()', () => {
     });
 
     expect(result.isValid).toBe(true);
-    expect(result.lisaValues.length).toBe(6);
+    expect(result.lisaValues).toEqual([0, 1, 1, 0, 0, 0]);
+    expect(result.pValues).toEqual([-1, 0.42, 0.42, -1, -1, -1]);
+    expect(result.sigCategories).toEqual([0, 0, 0, 0, 0, 0]);
+    expect(result.clusters).toEqual([0, 0, 0, 0, 0, 0]);
+    expect(result.nn).toEqual([1, 2, 2, 2, 2, 1]);
   });
 
   it('should calculate multivariate quantile LISA on a larger dataset', async () => {

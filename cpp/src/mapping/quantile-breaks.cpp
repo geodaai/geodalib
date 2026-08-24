@@ -39,18 +39,26 @@ std::vector<double> geoda::quantile_breaks(int num_cats, const std::vector<doubl
   std::vector<bool> undef(num_obs, 0);
 
   if (_undef.size() > 0) {
-    for (int i = 0; i < _undef.size(); ++i) {
+    // Only consult entries that exist; a shorter undef row leaves the rest defined.
+    for (size_t i = 0; i < _undef.size() && i < static_cast<size_t>(num_obs); ++i) {
       undef[i] = _undef[i] == 1;
     }
   }
 
+  // Undefined observations must not influence the cut points: exclude them so the
+  // percentiles are computed over the defined observations only.
   std::vector<std::pair<double, int> > var;
   for (int i = 0; i < num_obs; ++i) {
+    if (undef[i]) continue;
     var.push_back(std::make_pair(data[i], i));
   }
-  std::sort(var.begin(), var.end(), geoda::dbl_int_pair_cmp_less);
 
   std::vector<double> breaks(num_cats - 1);
+  if (var.empty()) {
+    // All observations undefined: no defined cut points exist; return a degenerate
+    // all-zero break vector rather than indexing into an empty percentile input.
+    return breaks;
+  }
   for (int i = 0, iend = breaks.size(); i < iend; i++) {
     breaks[i] = geoda::percentile(((i + 1.0) * 100.0) / static_cast<double>(num_cats), var);
   }
