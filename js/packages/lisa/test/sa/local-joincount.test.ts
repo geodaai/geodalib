@@ -67,6 +67,26 @@ describe('localJoinCount()', () => {
       'localJoinCount: data must be binary (0/1)'
     );
   });
+
+  it('should reject a negative permutation count', async () => {
+    // The native wrapper takes permutation as an unsigned int cast to int, so -1
+    // would become a huge count and allocate out of control; the wrapper throws.
+    const data = [1, 0, 1, 1, 0, 1];
+    const neighbors = [[1], [0], [], [4, 5], [3, 5], [3, 4]];
+
+    await expect(localJoinCount({ data, neighbors, permutation: -1 })).rejects.toThrow(
+      'localJoinCount: permutation must be an integer'
+    );
+  });
+
+  it('should reject a non-integer permutation count', async () => {
+    const data = [1, 0, 1, 1, 0, 1];
+    const neighbors = [[1], [0], [], [4, 5], [3, 5], [3, 4]];
+
+    await expect(localJoinCount({ data, neighbors, permutation: 99.5 })).rejects.toThrow(
+      'localJoinCount: permutation must be an integer'
+    );
+  });
 });
 
 describe('multivariateLocalJoinCount()', () => {
@@ -132,6 +152,18 @@ describe('multivariateLocalJoinCount()', () => {
 
     await expect(multivariateLocalJoinCount({ data, neighbors })).rejects.toThrow(
       'multivariateLocalJoinCount: data must be binary (0/1)'
+    );
+  });
+
+  it('should reject a negative permutation count', async () => {
+    const data = [
+      [1, 1, 0, 1, 0, 1],
+      [1, 1, 0, 1, 0, 1],
+    ];
+    const neighbors = [[1], [0], [], [4, 5], [3, 5], [3, 4]];
+
+    await expect(multivariateLocalJoinCount({ data, neighbors, permutation: -1 })).rejects.toThrow(
+      'multivariateLocalJoinCount: permutation must be an integer'
     );
   });
 });

@@ -68,6 +68,16 @@ export async function localJoinCount({
   significanceCutoff = 0.05,
   seed = 1234567890,
 }: LocalJoinCountProps): Promise<LocalJoinCountResult> {
+  // The native wrapper takes permutation as an unsigned int then casts it to int,
+  // so a negative or >INT_MAX value becomes a negative/huge permutation count that
+  // can trigger an enormous allocation in the LISA constructor. Reject it before
+  // touching the WASM module.
+  if (!Number.isInteger(permutation) || permutation < 0 || permutation > 2147483647) {
+    throw new Error(
+      `localJoinCount: permutation must be an integer in [0, 2147483647], got ${String(permutation)}`
+    );
+  }
+
   const wasm = await initWASM();
 
   // This is a binary (0/1) join count: UniJoinCount treats any positive value as
@@ -153,6 +163,14 @@ export async function multivariateLocalJoinCount({
   significanceCutoff = 0.05,
   seed = 1234567890,
 }: MultivariateLocalJoinCountProps): Promise<LocalJoinCountResult> {
+  // Same guard as the univariate wrapper: the native permutation is an unsigned int
+  // cast to int, so a negative or >INT_MAX value would allocate out of control.
+  if (!Number.isInteger(permutation) || permutation < 0 || permutation > 2147483647) {
+    throw new Error(
+      `multivariateLocalJoinCount: permutation must be an integer in [0, 2147483647], got ${String(permutation)}`
+    );
+  }
+
   const wasm = await initWASM();
 
   // MultiJoinCount multiplies raw values into its integer zz, so non-binary data
