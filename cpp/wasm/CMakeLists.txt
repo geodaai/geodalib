@@ -35,6 +35,8 @@ if(USE_EMCC)
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s NO_FILESYSTEM=1")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s MODULARIZE=1")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s 'EXPORT_NAME=geoda'")
+    # Avoid emitting BigInt literals so the generated glue stays compatible with the
+    # es2017 esbuild target used to bundle the WASM into the JS package.
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s WASM_BIGINT=0")
 endif()
 

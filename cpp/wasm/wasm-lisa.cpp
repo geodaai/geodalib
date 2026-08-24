@@ -52,11 +52,14 @@ EMSCRIPTEN_BINDINGS(wasmgeoda) {
       .function("getColors", &geoda::LisaResult::get_colors);
 
   emscripten::function("localMoran", &geoda::local_moran);
+  emscripten::function("localMoranEB", &geoda::local_moran_eb);
   emscripten::function("localG", &geoda::local_g);
   emscripten::function("bivariateLocalMoran", &geoda::local_bivariate_moran);
   emscripten::function("localGeary", &geoda::local_geary);
   emscripten::function("multivariateLocalGeary", &geoda::local_multivariate_geary);
   emscripten::function("multivariateQuantileLisa", &geoda::local_multiquantilelisa);
+  emscripten::function("localJoinCount", &geoda::local_joincount);
+  emscripten::function("multivariateLocalJoinCount", &geoda::local_multijoincount);
   emscripten::function("quantileLisa", &geoda::quantile_lisa);
 }
 #endif
