@@ -5,6 +5,7 @@
 #include <gtest/gtest.h>
 
 #include <cmath>
+#include <limits>
 
 #include "weights/weights.h"
 #include "test/data.h"
@@ -130,4 +131,33 @@ TEST(WEIGHTS, NEIGHBOR_MATCH_EDGE_CASES) {
     EXPECT_GE(p, 0.0);
     EXPECT_LE(p, 1.0);
   }
+}
+
+TEST(WEIGHTS, NEIGHBOR_MATCH_REJECTS_INVALID_INPUT) {
+  std::vector<std::vector<double>> data = {{1.0, 2.0, 3.0}};
+
+  // an unsupported scaling method (including a typo) must be rejected instead
+  // of silently falling back to 'standardize'
+  std::vector<std::vector<double>> bad_scale =
+      geoda::neighbor_match_test(TEST_POINT_COLLECTION, 1, data, "standrdize", "euclidean", false);
+  EXPECT_TRUE(bad_scale.empty());
+
+  // an unsupported distance metric must be rejected instead of silently
+  // falling back to Euclidean
+  std::vector<std::vector<double>> bad_dist =
+      geoda::neighbor_match_test(TEST_POINT_COLLECTION, 1, data, "raw", "chebyshev", false);
+  EXPECT_TRUE(bad_dist.empty());
+
+  // non-finite attribute values would produce NaN distances and an invalid
+  // sort; they must be rejected before any distance is computed
+  std::vector<std::vector<double>> nan_data = {{1.0, std::numeric_limits<double>::quiet_NaN(), 3.0}};
+  std::vector<std::vector<double>> nan_result =
+      geoda::neighbor_match_test(TEST_POINT_COLLECTION, 1, nan_data, "raw", "euclidean", false);
+  EXPECT_TRUE(nan_result.empty());
+
+  // infinity is equally invalid
+  std::vector<std::vector<double>> inf_data = {{1.0, std::numeric_limits<double>::infinity(), 3.0}};
+  std::vector<std::vector<double>> inf_result =
+      geoda::neighbor_match_test(TEST_POINT_COLLECTION, 1, inf_data, "raw", "euclidean", false);
+  EXPECT_TRUE(inf_result.empty());
 }

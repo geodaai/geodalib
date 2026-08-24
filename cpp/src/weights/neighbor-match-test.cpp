@@ -40,9 +40,10 @@ std::vector<double> standardize_variable(const std::vector<double>& data) {
 }
 
 std::vector<double> scale_variable(const std::vector<double>& data, const std::string& method) {
-  const std::string m = to_lower(method);
-  if (m == "raw") return data;
-  return standardize_variable(data);  // only 'raw' and 'standardize' supported in this port
+  // neighbor_match_test validates the method against the documented
+  // 'raw'/'standardize' values before invoking this helper.
+  if (method == "raw") return data;
+  return standardize_variable(data);
 }
 
 double attribute_distance(const std::vector<double>& a, const std::vector<double>& b, bool manhattan) {
@@ -61,7 +62,19 @@ std::vector<std::vector<double>> geoda::neighbor_match_test(const GeometryCollec
                                                             const std::string& scale_method,
                                                             const std::string& dist_type, bool is_mile) {
   size_t num_obs = geoms.size();
-  bool manhattan = to_lower(dist_type) == "manhattan";
+
+  // Only the documented scaling methods and distance metrics are supported;
+  // anything else (including a typo) must be rejected instead of silently
+  // treated as 'standardize' or 'euclidean', which would change the result.
+  const std::string scale = to_lower(scale_method);
+  const std::string dist = to_lower(dist_type);
+  if (scale != "raw" && scale != "standardize") {
+    return {};
+  }
+  if (dist != "euclidean" && dist != "manhattan") {
+    return {};
+  }
+  bool manhattan = dist == "manhattan";
 
   // k >= num_obs is impossible (an observation can have at most num_obs - 1
   // neighbors), and the hypergeometric model below draws k neighbors from a
@@ -69,6 +82,17 @@ std::vector<std::vector<double>> geoda::neighbor_match_test(const GeometryCollec
   // the p-value table is never left with non-probability sentinels.
   if (num_obs == 0 || k == 0 || k >= num_obs) {
     return {};
+  }
+
+  // Non-finite values produce NaN distances whose comparator violates the
+  // strict weak ordering std::sort requires below (and a single NaN collapses a
+  // standardized variable to zeros). Reject them before building any distances.
+  for (const auto& var : data) {
+    for (double v : var) {
+      if (!std::isfinite(v)) {
+        return {};
+      }
+    }
   }
 
   // Spatial k-NN with an explicit (distance, index) tie-break. boost's R-tree

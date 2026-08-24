@@ -4,7 +4,7 @@
 
 > **getNeighborMatchTestFromGeomCollection**(`__namedParameters`): `Promise`\<[`NeighborMatchTestResult`](../type-aliases/NeighborMatchTestResult.md)\>
 
-Defined in: core/src/weights/neighbor-match-test.ts:93
+Defined in: core/src/weights/neighbor-match-test.ts:103
 
 ## Parameters
 

@@ -5,7 +5,12 @@ import { getBinaryGeometryTemplate } from '@loaders.gl/arrow';
 import { BinaryFeatureCollection } from '@loaders.gl/schema';
 import { describe, it, expect } from '@jest/globals';
 
-import { getNeighborMatchTestFromBinaryGeometries } from '../../src/weights/neighbor-match-test';
+import { getGeometryCollectionFromBinaryGeometries } from '../../src/geometry/binary-geometry';
+import { initWASM } from '../../src/init';
+import {
+  getNeighborMatchTestFromBinaryGeometries,
+  getNeighborMatchTestFromGeomCollection,
+} from '../../src/weights/neighbor-match-test';
 
 describe('Neighbor Match Test', () => {
   const binaryGeometryType = { point: true, line: false, polygon: false };
@@ -73,5 +78,44 @@ describe('Neighbor Match Test', () => {
     });
     expect(result.cardinality).toEqual([]);
     expect(result.probability).toEqual([]);
+  });
+
+  // The direct GeometryCollection entry point has its own WASM vector
+  // construction and length validation, so it must be exercised directly rather
+  // than only through the binary-geometries wrapper.
+  it('should compute the neighbor match test from a GeometryCollection', async () => {
+    const wasmInstance = await initWASM();
+    const geomCollection = await getGeometryCollectionFromBinaryGeometries(
+      binaryGeometryType,
+      binaryGeometries,
+      wasmInstance
+    );
+
+    const result = await getNeighborMatchTestFromGeomCollection({
+      k: 1,
+      data: [[1, 2, 3, 4, 5]],
+      geomCollection,
+    });
+
+    expect(result.cardinality).toEqual([0, 1, 0, 0, 1]);
+    const expectedProb = [0.75, 0.25, 0.75, 0.75, 0.25];
+    result.probability.forEach((p, i) => expect(p).toBeCloseTo(expectedProb[i], 12));
+  });
+
+  it('should reject a length mismatch from a GeometryCollection', async () => {
+    const wasmInstance = await initWASM();
+    const geomCollection = await getGeometryCollectionFromBinaryGeometries(
+      binaryGeometryType,
+      binaryGeometries,
+      wasmInstance
+    );
+
+    await expect(
+      getNeighborMatchTestFromGeomCollection({
+        k: 1,
+        data: [[1, 2, 3, 4]],
+        geomCollection,
+      })
+    ).rejects.toThrow('must have 5 values');
   });
 });
