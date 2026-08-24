@@ -31,7 +31,8 @@ export type MultivariateQuantileLisaProps = {
   data: number[][] | Float32Array[];
   /** spatial weights matrix as adjacency list */
   neighbors: number[][];
-  permutation: number;
+  /** number of permutations for significance testing */
+  permutation?: number;
   significanceCutoff?: number;
   seed?: number;
 };

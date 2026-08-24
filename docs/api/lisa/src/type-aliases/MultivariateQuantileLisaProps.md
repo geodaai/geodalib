@@ -30,7 +30,9 @@ spatial weights matrix as adjacency list
 
 ### permutation
 
-> **permutation**: `number`
+> **permutation**?: `number`
+
+number of permutations for significance testing
 
 ### quantileValues
 
