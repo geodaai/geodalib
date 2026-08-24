@@ -180,6 +180,49 @@ TEST(LISA, MULTIVARIATE_JOIN_COUNT_VARIABLE_LENGTH_MISMATCH) {
   EXPECT_FALSE(result.is_valid);
 }
 
+TEST(LISA, MULTIVARIATE_JOIN_COUNT_SINGLE_VARIABLE_REJECTED) {
+  // One variable is not a multivariate colocation; pygeoda rejects n_vars <= 1.
+  std::vector<std::vector<double>> data = {{1, 0, 1}};
+  std::vector<std::vector<unsigned int>> undefs = {{0, 0, 0}};
+
+  geoda::LisaResult result =
+      geoda::local_multijoincount(data, TEST_NEIGHBORS, undefs, 0.05, 99, 12345);
+
+  EXPECT_FALSE(result.is_valid);
+  ASSERT_EQ(result.sig_cat_vec.size(), 3u);
+  EXPECT_EQ(result.sig_cat_vec[0], 6);
+}
+
+TEST(LISA, MULTIVARIATE_JOIN_COUNT_NON_COMPLEMENTARY_FORWARDED) {
+  // No colocating observation, but not complementary either (obs 1 has both
+  // variables 0; obs 0 and obs 2 each carry a single 1). Only the complementary
+  // case is diverted to local_bijoincount, so this input is forwarded to
+  // MultiJoinCount and yields a valid all-zero result.
+  std::vector<std::vector<double>> data = {{1, 0, 0}, {0, 0, 1}};
+  std::vector<std::vector<unsigned int>> undefs = {{0, 0, 0}, {0, 0, 0}};
+
+  geoda::LisaResult result =
+      geoda::local_multijoincount(data, TEST_NEIGHBORS, undefs, 0.05, 99, 12345);
+
+  EXPECT_TRUE(result.is_valid);
+  ASSERT_EQ(result.lisa_vec.size(), 3u);
+  EXPECT_DOUBLE_EQ(result.lisa_vec[0], 0.0);
+  EXPECT_DOUBLE_EQ(result.lisa_vec[1], 0.0);
+  EXPECT_DOUBLE_EQ(result.lisa_vec[2], 0.0);
+}
+
+TEST(LISA, LOCAL_JOIN_COUNT_OUT_OF_RANGE_NEIGHBOR) {
+  // A neighbor ID >= num_obs (a negative JS index arrives as a huge unsigned
+  // value) must be rejected instead of indexing past the compaction map.
+  std::vector<double> data = {1, 0, 1};
+  std::vector<unsigned int> undefs = {0, 0, 0};
+  std::vector<std::vector<unsigned int>> nbrs = {{1}, {0, 3}, {1}};
+
+  geoda::LisaResult result = geoda::local_joincount(data, nbrs, undefs, 0.05, 99, 12345);
+
+  EXPECT_FALSE(result.is_valid);
+}
+
 TEST(LISA, LOCAL_JOIN_COUNT_DATA_LENGTH_MISMATCH) {
   // data shorter than the neighbor list would read past the buffer during
   // compaction; the wrapper rejects it.

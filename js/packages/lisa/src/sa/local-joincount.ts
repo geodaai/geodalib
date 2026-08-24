@@ -40,7 +40,7 @@ export type LocalJoinCountResult = {
 export type LocalJoinCountProps = {
   data: number[] | Float32Array;
   neighbors: number[][];
-  permutation: number;
+  permutation?: number;
   significanceCutoff?: number;
   seed?: number;
 };
@@ -70,11 +70,14 @@ export async function localJoinCount({
 }: LocalJoinCountProps): Promise<LocalJoinCountResult> {
   const wasm = await initWASM();
 
-  const n = data.length;
+  // The C++ wrapper treats the neighbor list as the population (num_obs =
+  // neighbors.length) and validates that data has exactly that many entries, so
+  // pass the inputs through untouched instead of resizing/padding (a padded
+  // short row would bypass that validation and feed NaN to the statistic).
+  const n = neighbors.length;
   const wasmData = new wasm.VectorDouble();
-  wasmData.resize(n, 0);
-  for (let i = 0; i < n; ++i) {
-    wasmData.set(i, Number(data[i]));
+  for (const val of data) {
+    wasmData.push_back(Number(val));
   }
 
   const wasmNeighbors = new wasm.VecVecUInt();
@@ -122,7 +125,7 @@ export async function localJoinCount({
 export type MultivariateLocalJoinCountProps = {
   data: number[][] | Float32Array[];
   neighbors: number[][];
-  permutation: number;
+  permutation?: number;
   significanceCutoff?: number;
   seed?: number;
 };
@@ -145,10 +148,13 @@ export async function multivariateLocalJoinCount({
   const n = neighbors.length;
   const wasmData = new wasm.VecVecDouble();
   for (let v = 0; v < data.length; ++v) {
+    // Pass each variable through at its actual length: the C++ wrapper rejects a
+    // row that is not exactly num_obs. Resizing here would pad a short row with
+    // NaN (Number(undefined)) and silently truncate a long one, bypassing that
+    // validation.
     const varData = new wasm.VectorDouble();
-    varData.resize(n, 0);
-    for (let i = 0; i < n; ++i) {
-      varData.set(i, Number(data[v][i]));
+    for (const val of data[v]) {
+      varData.push_back(Number(val));
     }
     wasmData.push_back(varData);
   }

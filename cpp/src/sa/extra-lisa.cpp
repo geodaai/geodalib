@@ -33,8 +33,11 @@ static std::vector<unsigned int> build_compact_map(size_t num_obs,
 }
 
 // Compact the neighbors of the defined observations: undefined neighbors are
-// dropped and the remaining ones are remapped to their compacted ids.
-static void compact_neighbors(const std::vector<std::vector<unsigned int>>& neighbors,
+// dropped and the remaining ones are remapped to their compacted ids. Returns
+// false when a neighbor ID is out of range for the input (a negative JS index
+// arrives as a huge unsigned value), so the caller can reject the input instead
+// of indexing past the map.
+static bool compact_neighbors(const std::vector<std::vector<unsigned int>>& neighbors,
                               const std::vector<unsigned int>& orig_to_comp, size_t num_valid,
                               std::vector<std::vector<unsigned int>>& comp_nbrs) {
   const unsigned int kUndefined = std::numeric_limits<unsigned int>::max();
@@ -44,12 +47,14 @@ static void compact_neighbors(const std::vector<std::vector<unsigned int>>& neig
     if (c == kUndefined) continue;
     const std::vector<unsigned int>& nbrs = neighbors[i];
     for (unsigned int nb : nbrs) {
+      if (nb >= orig_to_comp.size()) return false;
       unsigned int comp_nb = orig_to_comp[nb];
       if (comp_nb != kUndefined) {
         comp_nbrs[c].push_back(comp_nb);
       }
     }
   }
+  return true;
 }
 
 // Expand a result computed on the compacted dataset back to the original
@@ -134,7 +139,12 @@ geoda::LisaResult geoda::local_joincount(const std::vector<double>& data,
     comp_data[c] = data[comp_to_orig[c]];
   }
   std::vector<std::vector<unsigned int>> comp_nbrs;
-  compact_neighbors(neighbors, orig_to_comp, num_valid, comp_nbrs);
+  if (!compact_neighbors(neighbors, orig_to_comp, num_valid, comp_nbrs)) {
+    // A neighbor ID out of range would have read past the compaction map;
+    // reject with the invalid contract.
+    expand_result(result, num_obs, comp_to_orig, neighbors);
+    return result;
+  }
 
   int nCPUs = 1;
   // After compaction every observation is defined, so the lookup-table
@@ -171,10 +181,12 @@ geoda::LisaResult geoda::local_multijoincount(const std::vector<std::vector<doub
 
   std::vector<size_t> comp_to_orig;
 
-  // Reject an empty variable set or variables misaligned with the neighbor list:
-  // with zero variables MultiJoinCount defaults zz to 1 for every observation and
-  // reports a bogus valid result; a short variable would read past its buffer.
-  if (num_vars == 0) {
+  // Reject an empty or single-variable set or variables misaligned with the
+  // neighbor list: with zero variables MultiJoinCount defaults zz to 1 for every
+  // observation and reports a bogus valid result; a short variable would read
+  // past its buffer; and a single variable is not a multivariate colocation
+  // (pygeoda rejects n_vars <= 1).
+  if (num_vars <= 1) {
     expand_result(result, num_obs, comp_to_orig, neighbors);
     return result;
   }
@@ -216,25 +228,30 @@ geoda::LisaResult geoda::local_multijoincount(const std::vector<std::vector<doub
     }
   }
 
-  // The bivariate no-colocation (complementary) case is served by
-  // local_bijoincount, not the multivariate colocation join count. Match that
-  // contract and reject two variables with no colocating observation.
+  // The complementary bivariate no-colocation case (every observation has exactly
+  // one variable = 1) is served by local_bijoincount, not the multivariate
+  // colocation join count. Match that contract and reject only that case; other
+  // bivariate inputs (e.g. with (0,0) observations) are forwarded to
+  // MultiJoinCount.
   if (num_vars == 2) {
-    bool has_colocation = false;
+    size_t ones0 = 0, ones1 = 0;
     for (size_t c = 0; c < num_valid; ++c) {
-      if (comp_data[0][c] == 1.0 && comp_data[1][c] == 1.0) {
-        has_colocation = true;
-        break;
-      }
+      if (comp_data[0][c] == 1.0) ++ones0;
+      if (comp_data[1][c] == 1.0) ++ones1;
     }
-    if (!has_colocation) {
+    if (ones0 + ones1 == num_valid) {
       expand_result(result, num_obs, comp_to_orig, neighbors);
       return result;
     }
   }
 
   std::vector<std::vector<unsigned int>> comp_nbrs;
-  compact_neighbors(neighbors, orig_to_comp, num_valid, comp_nbrs);
+  if (!compact_neighbors(neighbors, orig_to_comp, num_valid, comp_nbrs)) {
+    // A neighbor ID out of range would have read past the compaction map;
+    // reject with the invalid contract.
+    expand_result(result, num_obs, comp_to_orig, neighbors);
+    return result;
+  }
 
   int nCPUs = 1;
   std::string perm_method = "LookupTable";

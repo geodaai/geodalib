@@ -44,6 +44,18 @@ describe('localJoinCount()', () => {
     expect(result.isValid).toBe(true);
     expect(result.lisaValues.length).toBe(data.length);
   });
+
+  it('should reject data length not matching the neighbor list', async () => {
+    // The C++ wrapper treats the neighbor list as the population; data is passed
+    // through at its actual length so the mismatch is caught instead of silently
+    // padded.
+    const data = [1, 0, 1, 1, 0, 1];
+    const neighbors = [[1], [0], [], [4, 5], [3, 5]]; // only 5 rows
+
+    const result = await localJoinCount({ data, neighbors });
+
+    expect(result.isValid).toBe(false);
+  });
 });
 
 describe('multivariateLocalJoinCount()', () => {
@@ -72,5 +84,29 @@ describe('multivariateLocalJoinCount()', () => {
     expect(result.sigCategories).toEqual([0, 0, 0, 0, 0, 0]);
     expect(result.clusters).toEqual([0, 0, 0, 0, 0, 0]);
     expect(result.nn).toEqual([1, 1, 0, 2, 2, 2]);
+  });
+
+  it('should reject a single variable (not multivariate)', async () => {
+    const data = [[1, 1, 0, 1, 0, 1]];
+    const neighbors = [[1], [0], [], [4, 5], [3, 5], [3, 4]];
+
+    const result = await multivariateLocalJoinCount({ data, neighbors });
+
+    expect(result.isValid).toBe(false);
+  });
+
+  it('should reject a variable shorter than the neighbor list', async () => {
+    // The first variable has 5 entries while the neighbor list has 6; the row is
+    // passed through at its actual length so the C++ wrapper rejects it instead
+    // of padding with NaN.
+    const data = [
+      [1, 1, 0, 1, 0, 1],
+      [1, 1, 0, 1, 0],
+    ];
+    const neighbors = [[1], [0], [], [4, 5], [3, 5], [3, 4]];
+
+    const result = await multivariateLocalJoinCount({ data, neighbors });
+
+    expect(result.isValid).toBe(false);
   });
 });
