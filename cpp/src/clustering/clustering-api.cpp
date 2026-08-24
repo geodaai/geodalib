@@ -24,18 +24,19 @@ std::vector<std::vector<double>> scale_data(const std::vector<std::vector<double
   if (data.empty()) {
     return {};
   }
-  if (scale_method == "raw") {
-    return data;
-  }
-  // All variables must hold one value per observation; standardize_data_wasm
-  // bails out silently on a length mismatch, so reject it explicitly instead
-  // of producing inconsistently-scaled variables.
+  // Every variable must hold one value per observation, regardless of scaling
+  // method. standardize_data_wasm bails out silently on a length mismatch, and
+  // the "raw" path would hand mismatched lengths straight to the wrappers which
+  // index data[i][r] out of bounds, so reject the mismatch up front.
   const size_t num_obs = data[0].size();
   for (size_t i = 0; i < data.size(); ++i) {
     if (data[i].size() != num_obs) {
       throw std::invalid_argument(
           "scale_data: each variable must have the same number of observations");
     }
+  }
+  if (scale_method == "raw") {
+    return data;
   }
   std::vector<std::vector<double>> scaled = data;
   std::vector<unsigned int> undef(num_obs, 0);
@@ -122,7 +123,10 @@ std::vector<std::vector<int>> geoda::maxp_greedy(const std::vector<std::vector<u
   GeoDaWeight* w = new VectorWeight(neighbors);
   std::vector<std::pair<double, std::vector<double>>> min_bounds, max_bounds;
   std::vector<int> init_regions;
-  maxp_greedy_wrapper mp(w, data, iterations, min_bounds, max_bounds, init_regions, distance_method, rnd_seed, 1, 0);
+  // maxp_wrapper expects standardized data (matching azp_greedy and pygeoda);
+  // forwarding raw data would make results depend on variable scales.
+  std::vector<std::vector<double>> scaled = scale_data(data, "standardize");
+  maxp_greedy_wrapper mp(w, scaled, iterations, min_bounds, max_bounds, init_regions, distance_method, rnd_seed, 1, 0);
   std::vector<std::vector<int>> result = mp.GetClusters();
   delete w;
   return result;
@@ -135,8 +139,11 @@ std::vector<std::vector<int>> geoda::azp_sa(int p, const std::vector<std::vector
   GeoDaWeight* w = new VectorWeight(neighbors);
   std::vector<std::pair<double, std::vector<double>>> min_bounds, max_bounds;
   std::vector<int> init_regions;
-  azp_sa_wrapper azp(p, w, data, inits, cooling_rate, sa_maxit, min_bounds, max_bounds, init_regions, distance_method,
-                     rnd_seed, 0);
+  // azp_wrapper expects standardized data (matching azp_greedy); forwarding raw
+  // data would skew the objective function and make results scale-dependent.
+  std::vector<std::vector<double>> scaled = scale_data(data, "standardize");
+  azp_sa_wrapper azp(p, w, scaled, inits, cooling_rate, sa_maxit, min_bounds, max_bounds, init_regions,
+                     distance_method, rnd_seed, 0);
   std::vector<std::vector<int>> result = azp.GetClusters();
   delete w;
   return result;
@@ -149,8 +156,10 @@ std::vector<std::vector<int>> geoda::azp_tabu(int p, const std::vector<std::vect
   GeoDaWeight* w = new VectorWeight(neighbors);
   std::vector<std::pair<double, std::vector<double>>> min_bounds, max_bounds;
   std::vector<int> init_regions;
-  azp_tabu_wrapper azp(p, w, data, inits, tabu_length, conv_tabu, min_bounds, max_bounds, init_regions, distance_method,
-                       rnd_seed, 0);
+  // azp_wrapper expects standardized data (matching azp_greedy).
+  std::vector<std::vector<double>> scaled = scale_data(data, "standardize");
+  azp_tabu_wrapper azp(p, w, scaled, inits, tabu_length, conv_tabu, min_bounds, max_bounds, init_regions,
+                       distance_method, rnd_seed, 0);
   std::vector<std::vector<int>> result = azp.GetClusters();
   delete w;
   return result;
@@ -163,8 +172,10 @@ std::vector<std::vector<int>> geoda::maxp_sa(const std::vector<std::vector<unsig
   GeoDaWeight* w = new VectorWeight(neighbors);
   std::vector<std::pair<double, std::vector<double>>> min_bounds, max_bounds;
   std::vector<int> init_regions;
-  maxp_sa_wrapper mp(w, data, iterations, cooling_rate, sa_maxit, min_bounds, max_bounds, init_regions, distance_method,
-                     rnd_seed, 1, 0);
+  // maxp_wrapper expects standardized data (matching maxp_greedy).
+  std::vector<std::vector<double>> scaled = scale_data(data, "standardize");
+  maxp_sa_wrapper mp(w, scaled, iterations, cooling_rate, sa_maxit, min_bounds, max_bounds, init_regions,
+                     distance_method, rnd_seed, 1, 0);
   std::vector<std::vector<int>> result = mp.GetClusters();
   delete w;
   return result;
@@ -177,7 +188,9 @@ std::vector<std::vector<int>> geoda::maxp_tabu(const std::vector<std::vector<uns
   GeoDaWeight* w = new VectorWeight(neighbors);
   std::vector<std::pair<double, std::vector<double>>> min_bounds, max_bounds;
   std::vector<int> init_regions;
-  maxp_tabu_wrapper mp(w, data, iterations, tabu_length, conv_tabu, min_bounds, max_bounds, init_regions,
+  // maxp_wrapper expects standardized data (matching maxp_greedy).
+  std::vector<std::vector<double>> scaled = scale_data(data, "standardize");
+  maxp_tabu_wrapper mp(w, scaled, iterations, tabu_length, conv_tabu, min_bounds, max_bounds, init_regions,
                        distance_method, rnd_seed, 1, 0);
   std::vector<std::vector<int>> result = mp.GetClusters();
   delete w;

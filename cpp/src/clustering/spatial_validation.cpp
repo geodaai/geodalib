@@ -304,8 +304,10 @@ SpatialValidationCluster::~SpatialValidationCluster()
 
 SpatialValidationComponent* SpatialValidationCluster::GetComponent(int eid)
 {
-    // get component by giving an element id
-    return component_dict[eid];
+    // find instead of operator[] so a read-only lookup never inserts a default
+    // (null) entry into component_dict for an unknown element.
+    std::map<int, SpatialValidationComponent*>::const_iterator it = component_dict.find(eid);
+    return it == component_dict.end() ? 0 : it->second;
 }
 
 std::vector<int> SpatialValidationCluster::GetCoreElements()

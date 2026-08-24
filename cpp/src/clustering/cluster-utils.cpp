@@ -34,6 +34,11 @@ double euclid(int n, double** data1, double** data2, int** mask1, int** mask2, c
       }
     }
   }
+  // tweight accumulates the sum of weights over the valid (unmasked) terms. It
+  // is used as a guard (no valid attributes -> distance 0); the returned value
+  // is the unnormalized weighted sum of squared differences, intentionally
+  // matching libgeoda's euclid so clustering results are identical to the
+  // reference implementation.
   if (!tweight) return 0;
   return result;
 }

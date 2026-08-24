@@ -18,8 +18,8 @@ JoinCountRatio sub_joincount_ratio(int cluster, unordered_map<int, bool>& select
         total_neighbors += nn;
         // get join count for obs[idx] = 1
         for (int j=0; j < nn; ++j) {
-            int nn = (int)nbrs[j];
-            if (selected.find(nn) != selected.end()) {
+            int nid = (int)nbrs[j];
+            if (selected.find(nid) != selected.end()) {
                 total_joincount += 1;
             }
         }

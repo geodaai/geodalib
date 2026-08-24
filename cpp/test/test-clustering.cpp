@@ -27,6 +27,10 @@ TEST(CLUSTERING, SCHC) {
   std::vector<std::vector<double>> mismatched = {{1.0, 2.0, 3.0, 4.0, 5.0}, {1.0, 2.0, 3.0}};
   EXPECT_THROW(geoda::schc(2, TEST_NEIGHBORS, mismatched, "standardize", "ward", "euclidean", bound_vals, 0.0),
                std::invalid_argument);
+  // the raw path must reject a length mismatch too (it would otherwise hand
+  // out-of-bounds indices to the wrappers)
+  EXPECT_THROW(geoda::schc(2, TEST_NEIGHBORS, mismatched, "raw", "ward", "euclidean", bound_vals, 0.0),
+               std::invalid_argument);
 }
 
 TEST(CLUSTERING, REDCAP) {
