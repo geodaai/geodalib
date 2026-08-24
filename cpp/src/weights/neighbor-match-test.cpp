@@ -122,7 +122,9 @@ std::vector<std::vector<double>> geoda::neighbor_match_test(const GeometryCollec
 
   std::vector<std::vector<double>> scaled;
   for (const auto& var : data) {
-    scaled.push_back(scale_variable(var, scale_method));
+    // scale is the normalized (lowercased) value that passed validation above;
+    // the raw input could be a valid case variant like "RAW".
+    scaled.push_back(scale_variable(var, scale));
   }
 
   size_t num_vars = scaled.size();

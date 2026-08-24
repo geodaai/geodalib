@@ -51,6 +51,12 @@ describe('Neighbor Match Test', () => {
       binaryGeometries,
     });
 
+    // Cardinalities: obs 0's spatial 1-NN is obs 2 and attribute 1-NN is obs 1
+    // (no overlap); obs 1 has both 1-NNs = obs 0 (overlap 1); obs 2's spatial
+    // 1-NN is obs 0 and attribute 1-NN is obs 1 (no overlap); obs 4 has both
+    // 1-NNs = obs 3 (overlap 1). For obs 3 the spatial 1-NN is obs 4, but the
+    // attribute distance to obs 2 (|4-3|) ties with obs 4 (|4-5|) and the
+    // candidate index tie-break selects obs 2, so there is no overlap (0).
     expect(result.cardinality).toEqual([0, 1, 0, 0, 1]);
     // k = 1 with 5 observations: universe = 4, P(0) = 3/4, P(1) = 1/4.
     // Probabilities are computed via log-gamma combinations, so compare with tolerance.
