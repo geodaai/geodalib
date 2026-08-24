@@ -158,16 +158,9 @@ export async function batchLocalMoran({
       }
     }
 
-    for (let v = 0; v < data.length; ++v) {
-      const undef = new wasm.VectorUInt();
-      try {
-        undef.resize(n, 0);
-        wasmUndefs.push_back(undef);
-      } finally {
-        undef.delete();
-      }
-    }
-
+    // No undefined mask is supported for batch Local Moran; the C++ bridge turns
+    // an empty VecVecUInt into all-false per-variable undef rows, so there is no
+    // per-variable numObs x numVars zero matrix to build.
     const result = wasm.batchLocalMoran(
       wasmData,
       wasmNeighbors,
@@ -177,18 +170,29 @@ export async function batchLocalMoran({
       seed
     );
 
-    const isValid = result.isValid();
-    const lisaValues = vecVecDoubleToNumber(result.getLisaValues());
-    const pValues = vecVecDoubleToNumber(result.getPValues());
-    const clusters = vecVecIntToNumber(result.getClusters());
-    const lagValues = vecVecDoubleToNumber(result.getLagValues());
-    const nn = ownedVecIntToNumber(result.getNN());
-    const labels = ownedVecStringArray(result.getLabels());
-    const colors = ownedVecStringArray(result.getColors());
-    // BatchLisaResult owns the vectors behind the getters above; by the time we
-    // reach here all of them have been converted to JS arrays and released, so
-    // it is safe to release the result object itself.
-    result.delete();
+    let isValid: boolean;
+    let lisaValues: number[][];
+    let pValues: number[][];
+    let clusters: number[][];
+    let lagValues: number[][];
+    let nn: number[];
+    let labels: string[];
+    let colors: string[];
+    try {
+      isValid = result.isValid();
+      lisaValues = vecVecDoubleToNumber(result.getLisaValues());
+      pValues = vecVecDoubleToNumber(result.getPValues());
+      clusters = vecVecIntToNumber(result.getClusters());
+      lagValues = vecVecDoubleToNumber(result.getLagValues());
+      nn = ownedVecIntToNumber(result.getNN());
+      labels = ownedVecStringArray(result.getLabels());
+      colors = ownedVecStringArray(result.getColors());
+    } finally {
+      // The getter-returned vectors are heap copies owned by JS and are released
+      // by the conversion helpers above; the result wrapper itself must still be
+      // released even if a conversion throws, so delete it here.
+      result.delete();
+    }
 
     return {
       isValid,
