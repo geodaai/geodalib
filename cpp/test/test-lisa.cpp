@@ -126,8 +126,8 @@ TEST(LISA, LOCAL_JOIN_COUNT_UNDEFINED_NEIGHBOR_NO_HANG) {
 }
 
 TEST(LISA, MULTIVARIATE_JOIN_COUNT) {
-  // two binary variables
-  std::vector<std::vector<double>> data = {{1, 0, 1}, {0, 1, 0}};
+  // two binary variables with a colocation (obs 0 and obs 2 have both = 1)
+  std::vector<std::vector<double>> data = {{1, 0, 1}, {1, 0, 1}};
   std::vector<std::vector<unsigned int>> undefs = {{0, 0, 0}, {0, 0, 0}};
 
   geoda::LisaResult result =
@@ -136,6 +136,59 @@ TEST(LISA, MULTIVARIATE_JOIN_COUNT) {
   EXPECT_TRUE(result.is_valid);
   EXPECT_EQ(result.lisa_vec.size(), 3u);
   EXPECT_EQ(result.sig_local_vec.size(), 3u);
+}
+
+TEST(LISA, MULTIVARIATE_JOIN_COUNT_NO_COLOCATION_REJECTED) {
+  // Two variables with no observation where both are 1: the complementary
+  // bivariate no-colocation case belongs to local_bijoincount, so the
+  // multivariate wrapper rejects it (is_valid stays false, undefined markers).
+  std::vector<std::vector<double>> data = {{1, 0, 1}, {0, 1, 0}};
+  std::vector<std::vector<unsigned int>> undefs = {{0, 0, 0}, {0, 0, 0}};
+
+  geoda::LisaResult result =
+      geoda::local_multijoincount(data, TEST_NEIGHBORS, undefs, 0.05, 99, 12345);
+
+  EXPECT_FALSE(result.is_valid);
+  ASSERT_EQ(result.sig_cat_vec.size(), 3u);
+  EXPECT_EQ(result.sig_cat_vec[0], 6);
+  EXPECT_DOUBLE_EQ(result.lisa_vec[0], 0.0);
+}
+
+TEST(LISA, MULTIVARIATE_JOIN_COUNT_EMPTY_VARIABLES) {
+  // An empty variable set would make MultiJoinCount default zz to 1 and report a
+  // bogus valid result; the wrapper rejects it.
+  std::vector<std::vector<double>> data;
+  std::vector<std::vector<unsigned int>> undefs;
+
+  geoda::LisaResult result =
+      geoda::local_multijoincount(data, TEST_NEIGHBORS, undefs, 0.05, 99, 12345);
+
+  EXPECT_FALSE(result.is_valid);
+  ASSERT_EQ(result.sig_cat_vec.size(), 3u);
+  EXPECT_EQ(result.sig_cat_vec[0], 6);
+}
+
+TEST(LISA, MULTIVARIATE_JOIN_COUNT_VARIABLE_LENGTH_MISMATCH) {
+  // A variable shorter than the neighbor list must be rejected rather than read
+  // past its buffer during compaction.
+  std::vector<std::vector<double>> data = {{1, 0, 1}, {1, 0}};
+  std::vector<std::vector<unsigned int>> undefs = {{0, 0, 0}, {0, 0, 0}};
+
+  geoda::LisaResult result =
+      geoda::local_multijoincount(data, TEST_NEIGHBORS, undefs, 0.05, 99, 12345);
+
+  EXPECT_FALSE(result.is_valid);
+}
+
+TEST(LISA, LOCAL_JOIN_COUNT_DATA_LENGTH_MISMATCH) {
+  // data shorter than the neighbor list would read past the buffer during
+  // compaction; the wrapper rejects it.
+  std::vector<double> data = {1, 0};
+  std::vector<unsigned int> undefs = {0, 0, 0};
+
+  geoda::LisaResult result = geoda::local_joincount(data, TEST_NEIGHBORS, undefs, 0.05, 99, 12345);
+
+  EXPECT_FALSE(result.is_valid);
 }
 
 TEST(LISA, LOCAL_JOIN_COUNT_ALL_UNDEFINED) {

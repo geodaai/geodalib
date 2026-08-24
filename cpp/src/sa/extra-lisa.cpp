@@ -7,6 +7,7 @@
 #include "weights/geoda-weight.h"
 #include "weights/vector-weight.h"
 
+#include <algorithm>
 #include <limits>
 #include <utility>
 #include <vector>
@@ -64,7 +65,11 @@ static void expand_result(geoda::LisaResult& result, size_t num_obs,
   std::vector<double> lisa(num_obs, 0.0);
   std::vector<int> nn(num_obs, 0);
 
-  for (size_t c = 0; c < comp_to_orig.size(); ++c) {
+  // Result vectors may be empty when the wrapper bails before running the
+  // analysis (e.g. a rejected input); only copy from a populated result and
+  // leave every observation at the undefined marker in that case.
+  size_t num_comp = std::min(comp_to_orig.size(), result.sig_local_vec.size());
+  for (size_t c = 0; c < num_comp; ++c) {
     size_t o = comp_to_orig[c];
     sig_local[o] = result.sig_local_vec[c];
     sig_cat[o] = result.sig_cat_vec[c];
@@ -117,6 +122,13 @@ geoda::LisaResult geoda::local_joincount(const std::vector<double>& data,
     return result;
   }
 
+  // Mismatched input (data not aligned with the neighbor list) would read past
+  // the data buffer while compacting; reject with the invalid contract.
+  if (data.size() != num_obs) {
+    expand_result(result, num_obs, comp_to_orig, neighbors);
+    return result;
+  }
+
   std::vector<double> comp_data(num_valid);
   for (size_t c = 0; c < num_valid; ++c) {
     comp_data[c] = data[comp_to_orig[c]];
@@ -157,6 +169,22 @@ geoda::LisaResult geoda::local_multijoincount(const std::vector<std::vector<doub
   size_t num_obs = neighbors.size();
   size_t num_vars = data.size();
 
+  std::vector<size_t> comp_to_orig;
+
+  // Reject an empty variable set or variables misaligned with the neighbor list:
+  // with zero variables MultiJoinCount defaults zz to 1 for every observation and
+  // reports a bogus valid result; a short variable would read past its buffer.
+  if (num_vars == 0) {
+    expand_result(result, num_obs, comp_to_orig, neighbors);
+    return result;
+  }
+  for (size_t v = 0; v < num_vars; ++v) {
+    if (data[v].size() != num_obs) {
+      expand_result(result, num_obs, comp_to_orig, neighbors);
+      return result;
+    }
+  }
+
   // Merge per-variable undefined flags the same way MultiJoinCount does (an
   // observation is undefined if any of its variables is undefined), then compact
   // to the defined observations so the lookup-table permutation population is
@@ -171,7 +199,6 @@ geoda::LisaResult geoda::local_multijoincount(const std::vector<std::vector<doub
     }
   }
 
-  std::vector<size_t> comp_to_orig;
   std::vector<unsigned int> orig_to_comp = build_compact_map(num_obs, merged_undefs, comp_to_orig);
   size_t num_valid = comp_to_orig.size();
 
@@ -188,6 +215,24 @@ geoda::LisaResult geoda::local_multijoincount(const std::vector<std::vector<doub
       comp_data[v][c] = data[v][comp_to_orig[c]];
     }
   }
+
+  // The bivariate no-colocation (complementary) case is served by
+  // local_bijoincount, not the multivariate colocation join count. Match that
+  // contract and reject two variables with no colocating observation.
+  if (num_vars == 2) {
+    bool has_colocation = false;
+    for (size_t c = 0; c < num_valid; ++c) {
+      if (comp_data[0][c] == 1.0 && comp_data[1][c] == 1.0) {
+        has_colocation = true;
+        break;
+      }
+    }
+    if (!has_colocation) {
+      expand_result(result, num_obs, comp_to_orig, neighbors);
+      return result;
+    }
+  }
+
   std::vector<std::vector<unsigned int>> comp_nbrs;
   compact_neighbors(neighbors, orig_to_comp, num_valid, comp_nbrs);
 
