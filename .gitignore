@@ -33,9 +33,11 @@
 
 cmake-build-debug/
 cmake-build-release/
+build-cpp/
 .idea/
 .vscode/
 build/
+build-cpp/
 tmp/
 node_modules/
 .vscode/

@@ -517,6 +517,98 @@ export class LisaResult {
   delete(): void;
 }
 
+export class Fragmentation {
+  n: number;
+  entropy: number;
+  simpson: number;
+  minClusterSize: number;
+  maxClusterSize: number;
+  meanClusterSize: number;
+  spatiallyContiguous: boolean;
+}
+
+export class Compactness {
+  area: number;
+  perimeter: number;
+  isoperimeterQuotient: number;
+}
+
+export class Diameter {
+  steps: number;
+  ratio: number;
+}
+
+export class JoinCountRatio {
+  cluster: number;
+  n: number;
+  ratio: number;
+}
+
+export class ValidationResult {
+  spatiallyConstrained: boolean;
+  fragmentation: Fragmentation;
+  clusterFragmentation: VectorFragmentation;
+  clusterDiameter: VectorDiameter;
+  clusterCompactness: VectorCompactness;
+  joincountRatio: VectorJoinCountRatio;
+}
+
+export class VectorFragmentation {
+  size(): number;
+  get(i: number): Fragmentation;
+}
+export class VectorDiameter {
+  size(): number;
+  get(i: number): Diameter;
+}
+export class VectorCompactness {
+  size(): number;
+  get(i: number): Compactness;
+}
+export class VectorJoinCountRatio {
+  size(): number;
+  get(i: number): JoinCountRatio;
+}
+
+/**
+ * Result of a batch LISA computation (per-variable arrays).
+ */
+export class BatchLisaResult {
+  /**
+   * Check if the result is valid
+   */
+  isValid(): boolean;
+  /**
+   * Get the LISA statistic values for each variable
+   */
+  getLisaValues(): VecVecDouble;
+  /**
+   * Get the p-values for each variable
+   */
+  getPValues(): VecVecDouble;
+  /**
+   * Get the cluster assignments for each variable
+   */
+  getClusters(): VecVecInt;
+  /**
+   * Get the spatial lag values for each variable
+   */
+  getLagValues(): VecVecDouble;
+  /**
+   * Get the number of neighbors for each observation
+   */
+  getNN(): VectorInt;
+  /**
+   * Get the labels for the clusters
+   */
+  getLabels(): VectorString;
+  /**
+   * Get the colors associated with each cluster
+   */
+  getColors(): VectorString;
+  delete(): void;
+}
+
 /**
  * Class for the diagnostic report of regression analysis
  */
@@ -878,6 +970,204 @@ export interface GeoDaModule {
   getNearestNeighbors(geometries: GeometryCollection, k: UnsignedInt): VecVecUInt;
 
   /**
+   * Spatially constrained hierarchical clustering (SCHC)
+   * @param k the number of clusters
+   * @param neighbors spatial weights matrix as adjacency list
+   * @param data multivariate data (one array per variable)
+   * @param scaleMethod raw | standardize
+   * @param linkageMethod single | complete | average | ward
+   * @param distanceMethod euclidean | manhattan
+   * @param boundVals optional bound values per observation
+   * @param minBound minimum bound
+   */
+  schc(
+    k: UnsignedInt,
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    scaleMethod: string,
+    linkageMethod: string,
+    distanceMethod: string,
+    boundVals: VectorDouble,
+    minBound: Double
+  ): VecVecInt;
+
+  /**
+   * Regionally constrained clustering (REDCAP)
+   * @param k the number of clusters
+   * @param neighbors spatial weights matrix as adjacency list
+   * @param data multivariate data
+   * @param scaleMethod raw | standardize
+   * @param redcapMethod firstorder-singlelinkage | fullorder-completelinkage | fullorder-averagelinkage | fullorder-singlelinkage | fullorder-wardlinkage
+   * @param distanceMethod euclidean | manhattan
+   * @param boundVals optional bound values per observation
+   * @param minBound minimum bound
+   */
+  redcap(
+    k: UnsignedInt,
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    scaleMethod: string,
+    redcapMethod: string,
+    distanceMethod: string,
+    boundVals: VectorDouble,
+    minBound: Double
+  ): VecVecInt;
+
+  /**
+   * Spatially constrained clustering (SKATER)
+   * @param k the number of clusters
+   * @param neighbors spatial weights matrix as adjacency list
+   * @param data multivariate data
+   * @param scaleMethod raw | standardize
+   * @param distanceMethod euclidean | manhattan
+   * @param boundVals optional bound values per observation
+   * @param minBound minimum bound
+   */
+  skater(
+    k: UnsignedInt,
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    scaleMethod: string,
+    distanceMethod: string,
+    boundVals: VectorDouble,
+    minBound: Double
+  ): VecVecInt;
+
+  /**
+   * AZP (Automatic Zoning Procedure) greedy regionalization
+   */
+  azpGreedy(
+    p: UnsignedInt,
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    inits: UnsignedInt,
+    distanceMethod: string,
+    rndSeed: number
+  ): VecVecInt;
+
+  /**
+   * Max-P greedy regionalization
+   */
+  maxpGreedy(
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    iterations: UnsignedInt,
+    distanceMethod: string,
+    rndSeed: number
+  ): VecVecInt;
+
+  /**
+   * AZP with simulated annealing
+   */
+  azpSA(
+    p: UnsignedInt,
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    inits: UnsignedInt,
+    coolingRate: Double,
+    saMaxit: UnsignedInt,
+    distanceMethod: string,
+    rndSeed: number
+  ): VecVecInt;
+
+  /**
+   * AZP with tabu search
+   */
+  azpTabu(
+    p: UnsignedInt,
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    inits: UnsignedInt,
+    tabuLength: UnsignedInt,
+    convTabu: UnsignedInt,
+    distanceMethod: string,
+    rndSeed: number
+  ): VecVecInt;
+
+  /**
+   * Max-P with simulated annealing
+   */
+  maxpSA(
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    iterations: UnsignedInt,
+    coolingRate: Double,
+    saMaxit: UnsignedInt,
+    distanceMethod: string,
+    rndSeed: number
+  ): VecVecInt;
+
+  /**
+   * Max-P with tabu search
+   */
+  maxpTabu(
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    iterations: UnsignedInt,
+    tabuLength: UnsignedInt,
+    convTabu: UnsignedInt,
+    distanceMethod: string,
+    rndSeed: number
+  ): VecVecInt;
+
+  /**
+   * Spatial validation of a clustering result
+   */
+  spatialValidation(
+    clusters: VectorInt,
+    neighbors: VecVecUInt,
+    geoms: GeometryCollection
+  ): ValidationResult;
+
+  /**
+   * Make clusters spatially contiguous
+   * @param clusters list of clusters (each a list of observation indices)
+   * @param neighbors spatial weights matrix as adjacency list
+   */
+  makeSpatial(clusters: VecVecInt, neighbors: VecVecUInt): VecVecInt;
+
+  /**
+   * Local Neighbor Match Test
+   * @param geoms the geometry collection
+   * @param k the number of nearest neighbors
+   * @param data the multiple data variables
+   * @param scaleMethod the scaling method (raw, standardize)
+   * @param distType the attribute distance metric (euclidean, manhattan)
+   * @param isMile the unit of spatial distance
+   */
+  neighborMatchTest(
+    geoms: GeometryCollection,
+    k: UnsignedInt,
+    data: VecVecDouble,
+    scaleMethod: string,
+    distType: string,
+    isMile: boolean
+  ): VecVecDouble;
+
+  /**
+   * Compute kernel weights for a collection of geometries using k-nearest neighbors.
+   * @param geometries the collection of geometries
+   * @param k the number of nearest neighbors
+   * @param kernel the kernel function (triangular, uniform, epanechnikov, quartic, gaussian)
+   * @param isMile the unit of distance
+   * @param useKernelDiagonals whether the diagonal (self) weight is kernel(0.0) instead of 1.0
+   * @param power the power (or exponent) applied to the distance before normalizing by the bandwidth
+   * @param adaptiveBandwidth whether to use each observation's k-th nearest neighbor distance as its
+   * bandwidth (true) or a single global maximum distance (false)
+   * @param isInverse whether to apply inverse distance weighting before the kernel
+   */
+  getKernelKnnWeights(
+    geometries: GeometryCollection,
+    k: UnsignedInt,
+    kernel: string,
+    isMile: boolean,
+    useKernelDiagonals: boolean,
+    power: Double,
+    adaptiveBandwidth: boolean,
+    isInverse: boolean
+  ): VecVecDouble;
+
+  /**
    * get the nearest neighbors of a collection of geometries
    * @param geometries the collection of geometries
    * @param threshold the distance threshold
@@ -888,6 +1178,24 @@ export interface GeoDaModule {
     threshold: Double,
     isMile: boolean
   ): VecVecUInt;
+
+  /**
+   * Compute kernel weights for a collection of geometries using a fixed bandwidth.
+   * @param geometries the collection of geometries
+   * @param bandwidth the fixed bandwidth in the selected unit
+   * @param kernel the kernel function (triangular, uniform, epanechnikov, quartic, gaussian)
+   * @param isMile the unit of distance
+   * @param useKernelDiagonals whether the diagonal (self) weight is kernel(1.0) instead of 1.0
+   * @param power the power (or exponent) applied to the distance before normalizing by the bandwidth
+   */
+  getKernelWeights(
+    geometries: GeometryCollection,
+    bandwidth: Double,
+    kernel: string,
+    isMile: boolean,
+    useKernelDiagonals: boolean,
+    power: Double
+  ): VecVecDouble;
 
   /**
    * get the distance thresholds of a collection of geometries that guarantee 1 nearest neighbors
@@ -953,6 +1261,38 @@ export interface GeoDaModule {
    */
   localMoran(
     data: VectorDouble,
+    neighbors: VecVecUInt,
+    undefs: VectorUInt,
+    significanceCutoff: number,
+    permuations: UnsignedInt,
+    lastSeed: number
+  ): LisaResult;
+
+  /**
+   * Batch Local Moran statistics (multiple variables)
+   * @param data the multiple data variables
+   * @param neighbors the spatial weights matrix
+   * @param undefs the undefined values per variable
+   * Empirical Bayes smoothed Local Moran statistics
+   * @param eventData the event (numerator) data values
+   * @param baseData the base (denominator) data values
+   * @param neighbors the spatial weights matrix that represents neighbor indices: [[1, 2], [0, 2], [0, 1],...]
+   * @param undefs the undefined values
+   * @param significanceCutoff the significance cutoff
+   * @param permuations the number of permutations
+   * @param lastSeed the last seed
+   */
+  batchLocalMoran(
+    data: VecVecDouble,
+    neighbors: VecVecUInt,
+    undefs: VecVecUInt,
+    significanceCutoff: number,
+    permuations: UnsignedInt,
+    lastSeed: number
+  ): BatchLisaResult;
+  localMoranEB(
+    eventData: VectorDouble,
+    baseData: VectorDouble,
     neighbors: VecVecUInt,
     undefs: VectorUInt,
     significanceCutoff: number,
@@ -1037,6 +1377,42 @@ export interface GeoDaModule {
   ): LisaResult;
 
   /**
+   * Local Join Count statistics
+   * @param data the binary (0/1) data values
+   * @param neighbors the spatial weights matrix that represents neighbor indices: [[1, 2], [0, 2], [0, 1],...]
+   * @param undefs the undefined values
+   * @param significanceCutoff the significance cutoff
+   * @param permuations the number of permutations
+   * @param lastSeed the last seed
+   */
+  localJoinCount(
+    data: VectorDouble,
+    neighbors: VecVecUInt,
+    undefs: VectorUInt,
+    significanceCutoff: number,
+    permuations: UnsignedInt,
+    lastSeed: number
+  ): LisaResult;
+
+  /**
+   * Multivariate Local Join Count statistics
+   * @param data the multiple binary (0/1) data variables
+   * @param neighbors the spatial weights matrix that represents neighbor indices: [[1, 2], [0, 2], [0, 1],...]
+   * @param undefs the undefined values
+   * @param significanceCutoff the significance cutoff
+   * @param permuations the number of permutations
+   * @param lastSeed the last seed
+   */
+  multivariateLocalJoinCount(
+    data: VecVecDouble,
+    neighbors: VecVecUInt,
+    undefs: VecVecUInt,
+    significanceCutoff: number,
+    permuations: UnsignedInt,
+    lastSeed: number
+  ): LisaResult;
+
+  /**
    * Local Quantile LISA statistics
    * @param k the number of breaks
    * @param quantile which quantile to use
@@ -1053,6 +1429,28 @@ export interface GeoDaModule {
     data: VectorDouble,
     neighbors: VecVecUInt,
     undefs: VectorUInt,
+    significanceCutoff: number,
+    permuations: UnsignedInt,
+    lastSeed: number
+  ): LisaResult;
+
+  /**
+   * Multivariate Local Quantile LISA statistics
+   * @param kValues the number of quantile breaks per variable
+   * @param quantileValues the quantile class per variable
+   * @param data the multiple data variables
+   * @param neighbors the spatial weights matrix that represents neighbor indices: [[1, 2], [0, 2], [0, 1],...]
+   * @param undefs the undefined values
+   * @param significanceCutoff the significance cutoff
+   * @param permuations the number of permutations
+   * @param lastSeed the last seed
+   */
+  multivariateQuantileLisa(
+    kValues: VectorInt,
+    quantileValues: VectorInt,
+    data: VecVecDouble,
+    neighbors: VecVecUInt,
+    undefs: VecVecUInt,
     significanceCutoff: number,
     permuations: UnsignedInt,
     lastSeed: number

@@ -13,5 +13,5 @@ outline: deep
 
 ## Other Operations
 
-- [Thiessen Polygons](/api/core/src/functions/thiessenPolygons)
+- [Thiessen Polygons](/api/core/src/functions/getThiessenPolygons)
 - [Minimum Spanning Tree](/api/core/src/functions/getMinimumSpanningTree)

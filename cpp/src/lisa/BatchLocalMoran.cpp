@@ -8,6 +8,8 @@
 #include "BatchLocalMoran.h"
 
 #include "weights/geoda-weight.h"
+#include "data/data.h"
+#include "utils/rnd.h"
 
 BatchLocalMoran::~BatchLocalMoran() {}
 

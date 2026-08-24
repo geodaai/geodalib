@@ -83,7 +83,9 @@ EMSCRIPTEN_BINDINGS(wasmgeoda) {
       .function("getColors", &geoda::LisaResult::get_colors);
 
   emscripten::function("getNearestNeighbors", &geoda::knearest_neighbors);
+  emscripten::function("getKernelKnnWeights", &geoda::kernel_knn_weights);
   emscripten::function("getDistanceWeights", &geoda::distance_weights);
+  emscripten::function("getKernelWeights", &geoda::kernel_weights);
   emscripten::function("getDistanceThresholds", &geoda::get_distance_thresholds);
   emscripten::function("getPolygonContiguityWeights", &geoda::polygon_contiguity_weights);
   emscripten::function("getPointContiguityWeights", &geoda::point_contiguity_weights);
@@ -93,6 +95,8 @@ EMSCRIPTEN_BINDINGS(wasmgeoda) {
   emscripten::function("bivariateLocalMoran", &geoda::local_bivariate_moran);
   emscripten::function("localGeary", &geoda::local_geary);
   emscripten::function("multivariateLocalGeary", &geoda::local_multivariate_geary);
+  emscripten::function("localJoinCount", &geoda::local_joincount);
+  emscripten::function("multivariateLocalJoinCount", &geoda::local_multijoincount);
   emscripten::function("quantileLisa", &geoda::quantile_lisa);
 
   emscripten::function("quantileBreaks", &geoda::quantile_breaks);

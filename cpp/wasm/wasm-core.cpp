@@ -22,6 +22,7 @@
 #include "sa/lisa-api.h"
 #include "data/data.h"
 #include "weights/weights.h"
+#include "clustering/clustering-api.h"
 
 template <typename T>
 emscripten::class_<std::vector<T>> register_vector_with_smart_ptrs(const char* name) {
@@ -103,10 +104,55 @@ EMSCRIPTEN_BINDINGS(wasmgeoda) {
   emscripten::function("cartogram", &geoda::cartogram);
 
   emscripten::function("getNearestNeighbors", &geoda::knearest_neighbors);
+  emscripten::function("schc", &geoda::schc);
+  emscripten::function("redcap", &geoda::redcap);
+  emscripten::function("skater", &geoda::skater);
+  emscripten::function("azpGreedy", &geoda::azp_greedy);
+  emscripten::function("azpSA", &geoda::azp_sa);
+  emscripten::function("azpTabu", &geoda::azp_tabu);
+  emscripten::function("maxpGreedy", &geoda::maxp_greedy);
+  emscripten::function("maxpSA", &geoda::maxp_sa);
+  emscripten::function("maxpTabu", &geoda::maxp_tabu);
+  emscripten::function("makeSpatial", &geoda::make_spatial);
+  emscripten::function("neighborMatchTest", &geoda::neighbor_match_test);
+  emscripten::function("getKernelKnnWeights", &geoda::kernel_knn_weights);
   emscripten::function("getDistanceWeights", &geoda::distance_weights);
+  emscripten::function("getKernelWeights", &geoda::kernel_weights);
   emscripten::function("getDistanceThresholds", &geoda::get_distance_thresholds);
   emscripten::function("getPolygonContiguityWeights", &geoda::polygon_contiguity_weights);
   emscripten::function("getPointContiguityWeights", &geoda::point_contiguity_weights);
+  emscripten::class_<Fragmentation>("Fragmentation")
+      .property("n", &Fragmentation::n)
+      .property("entropy", &Fragmentation::entropy)
+      .property("simpson", &Fragmentation::simpson)
+      .property("minClusterSize", &Fragmentation::min_cluster_size)
+      .property("maxClusterSize", &Fragmentation::max_cluster_size)
+      .property("meanClusterSize", &Fragmentation::mean_cluster_size)
+      .property("spatiallyContiguous", &Fragmentation::is_spatially_contiguous);
+  emscripten::register_vector<Fragmentation>("VectorFragmentation");
+  emscripten::class_<Compactness>("Compactness")
+      .property("area", &Compactness::area)
+      .property("perimeter", &Compactness::perimeter)
+      .property("isoperimeterQuotient", &Compactness::isoperimeter_quotient);
+  emscripten::register_vector<Compactness>("VectorCompactness");
+  emscripten::class_<Diameter>("Diameter")
+      .property("steps", &Diameter::steps)
+      .property("ratio", &Diameter::ratio);
+  emscripten::register_vector<Diameter>("VectorDiameter");
+  emscripten::class_<JoinCountRatio>("JoinCountRatio")
+      .property("cluster", &JoinCountRatio::cluster)
+      .property("n", &JoinCountRatio::n)
+      .property("ratio", &JoinCountRatio::ratio);
+  emscripten::register_vector<JoinCountRatio>("VectorJoinCountRatio");
+  emscripten::class_<ValidationResult>("ValidationResult")
+      .property("spatiallyConstrained", &ValidationResult::spatially_constrained)
+      .property("fragmentation", &ValidationResult::fragmentation)
+      .property("clusterFragmentation", &ValidationResult::cluster_fragmentation)
+      .property("clusterDiameter", &ValidationResult::cluster_diameter)
+      .property("clusterCompactness", &ValidationResult::cluster_compactness)
+      .property("joincountRatio", &ValidationResult::joincount_ratio);
+  emscripten::function("spatialValidation", &geoda::spatial_validation);
+
 
   emscripten::function("quantileBreaks", &geoda::quantile_breaks);
   emscripten::function("naturalBreaks", &geoda::natural_breaks);
