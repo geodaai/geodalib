@@ -81,3 +81,14 @@ TEST(CLUSTERING, MAKE_SPATIAL_REASSIGNS_DISCONNECTED) {
     EXPECT_FALSE(has0 && has2);
   }
 }
+
+TEST(CLUSTERING, MAKE_SPATIAL_REJECTS_EMPTY_CLUSTER) {
+  // An empty cluster would leave MakeSpatialCluster with a null core; the
+  // partition must be rejected without any accessor dereferencing null. Invalid
+  // input returns the original clusters unchanged.
+  std::vector<std::vector<int>> clusters = {{0, 1}, {2}, {}};
+  std::vector<std::vector<int>> result = geoda::make_spatial(clusters, TEST_NEIGHBORS);
+
+  ASSERT_EQ(result.size(), 3u);
+  EXPECT_TRUE(result[2].empty());
+}

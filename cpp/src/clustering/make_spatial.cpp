@@ -117,11 +117,17 @@ MakeSpatialComponent* MakeSpatialCluster::GetComponent(int eid) {
   return it == component_dict.end() ? nullptr : it->second;
 }
 
-const std::vector<int>& MakeSpatialCluster::GetCoreElements() { return core->GetElements(); }
+const std::vector<int>& MakeSpatialCluster::GetCoreElements() {
+  // core stays null when the cluster is empty (an invalid partition that the
+  // MakeSpatial constructor rejects); stay null-safe so no accessor dereferences
+  // a null pointer.
+  static const std::vector<int> empty;
+  return core ? core->GetElements() : empty;
+}
 
-bool MakeSpatialCluster::BelongsToCore(int eid) { return core->Has(eid); }
+bool MakeSpatialCluster::BelongsToCore(int eid) { return core != nullptr && core->Has(eid); }
 
-int MakeSpatialCluster::GetCoreSize() { return core->GetSize(); }
+int MakeSpatialCluster::GetCoreSize() { return core ? core->GetSize() : 0; }
 
 std::vector<MakeSpatialComponent*> MakeSpatialCluster::GetSurroundedSingletons() {
   std::vector<MakeSpatialComponent*> result;
@@ -211,6 +217,13 @@ MakeSpatial::MakeSpatial(int num_obs, const std::vector<std::vector<int>>& clust
 
   for (int i = 0; i < num_clusters; ++i) {
     std::vector<int> cluster = clusters[i];
+    // An empty cluster would leave MakeSpatialCluster with a null core that a
+    // later accessor would dereference; reject the whole partition up front.
+    // (Out-of-range cluster elements also fail the cluster_dict.size() !=
+    // num_obs check below.)
+    if (cluster.empty()) {
+      valid = false;
+    }
     for (auto j : cluster) {
       cluster_dict[j] = i;
     }

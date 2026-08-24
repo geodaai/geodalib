@@ -67,4 +67,25 @@ describe('makeSpatial()', () => {
     expectPartition(result, 5);
     expectContiguous(result, neighbors);
   });
+
+  it('should reject an empty cluster', async () => {
+    await expect(
+      makeSpatial({ clusters: [[0, 1], []], neighbors })
+    ).rejects.toThrow('empty cluster');
+  });
+
+  it('should reject an out-of-range cluster element', async () => {
+    await expect(
+      makeSpatial({ clusters: [[0, 5]], neighbors })
+    ).rejects.toThrow('out of range');
+  });
+
+  it('should reject an out-of-range neighbor index', async () => {
+    await expect(
+      makeSpatial({
+        clusters: [[0, 1]],
+        neighbors: [[1], [0, 9], [1], [2], [3]],
+      })
+    ).rejects.toThrow('out of range');
+  });
 });
