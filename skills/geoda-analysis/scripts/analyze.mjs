@@ -219,10 +219,9 @@ async function opGlobalMoran(g, features, opts) {
 async function opColocation(g, features, opts) {
   if (typeof g.lisa.localJoinCount !== 'function') {
     throw new Error(
-      'colocation (Local Join Count) needs @geoda/lisa >= 0.0.23, but the published ' +
-        '0.0.23 core/lisa packages fail to load their WASM in node (build regression). ' +
-        'This plugin pins 0.0.22, which cannot run join counts. Install the fixed ' +
-        '0.0.24+ and bump skills/geoda-analysis/package.json once geoda-lib ships it.'
+      'colocation (Local Join Count) needs @geoda/lisa >= 0.0.24. This plugin pins ' +
+        '@geoda/* >= 0.0.24; run `npm install` inside skills/geoda-analysis if the ' +
+        'locally installed @geoda/lisa is older.'
     );
   }
   const weights = await resolveWeights(g.core, features, opts);

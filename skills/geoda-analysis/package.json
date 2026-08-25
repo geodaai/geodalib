@@ -9,8 +9,8 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@geoda/core": "0.0.22",
-    "@geoda/lisa": "0.0.22",
-    "@geoda/regression": "0.0.22"
+    "@geoda/core": ">=0.0.24",
+    "@geoda/lisa": ">=0.0.24",
+    "@geoda/regression": ">=0.0.24"
   }
 }
