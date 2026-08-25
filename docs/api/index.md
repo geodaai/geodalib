@@ -1,6 +1,6 @@
-# GeoDa WASM
+# GeoDaLib 
 
-GeoDa WASM is a WebAssembly module that provides spatial data analysis capabilities from the GeoDa C++ library for use in web browsers and Node.js applications.
+GeoDaLib is a WebAssembly module that provides spatial data analysis capabilities from the GeoDa C++ library for use in web browsers and Node.js applications.
 
 ## ✨ Features
 
@@ -86,3 +86,19 @@ This project is licensed under the MIT License. Authors: Luc Anselin and Xun Li.
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+### Developer Certificate of Origin (DCO)
+
+This project requires all contributors to sign their commits with a Developer Certificate of Origin (DCO). This certifies that you have the right to submit your contribution to the project.
+
+**All commits must be signed with:**
+```
+Signed-off-by: Your Name <your.email@example.com>
+```
+
+You can sign commits using:
+```bash
+git commit -s -m "Your commit message"
+```
+
+For more information, see our [Contributing Guide](_media/CONTRIBUTING.md) and [DCO Documentation](_media/DCO.md).
