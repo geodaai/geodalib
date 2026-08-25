@@ -47,6 +47,43 @@ const permutation = 99;
 const result = await localMoran({data, neighbors, permutation});
 ```
 
+## 🤖 Claude Code plugin & standalone skill
+
+`skills/geoda-analysis/` packages the analysis engine for agent harnesses: it's
+installable as a Claude Code plugin, runnable standalone in node (no GUI, no map
+host), and sourced by kepler-assistant at build time.
+
+### Claude Code plugin
+
+```bash
+claude plugin marketplace add geodaai/geodalib
+claude plugin install geoda-analysis@geodalib
+```
+
+The plugin auto-installs `@geoda/core`, `@geoda/lisa`, `@geoda/regression`
+(`>= 0.0.24`) into the skill directory on install, and runs every operation
+through `scripts/analyze.mjs`. Full reference: `skills/geoda-analysis/SKILL.md`.
+
+### Standalone node driver
+
+```bash
+cd skills/geoda-analysis
+npm i @geoda/core @geoda/lisa @geoda/regression
+node scripts/analyze.mjs --help
+node scripts/analyze.mjs lisa --file data.geojson --variable income --weights-type queen
+```
+
+Ops: spatial weights, LISA (local Moran / Geary / local G / G* / quantile),
+global Moran, colocation join counts (univariate + bivariate no-colocation),
+spatial regression (classic / spatial-lag / spatial-error), classification,
+rates, standardization, Thiessen polygons, MST, cartogram.
+
+### kepler-assistant host
+
+kepler-assistant sources this skill at build time (see its `GEODA_SKILL_DIR`
+env var) and appends its own map-host command surface, so the standalone skill
+and the map-hosted assistant stay in sync.
+
 ## 🏗️ Development
 
 ### 📋 Prerequisites
