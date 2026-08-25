@@ -8,6 +8,10 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   build-test-publish:
     runs-on: ubuntu-latest
@@ -18,7 +22,7 @@ jobs:
       - name: Setup Volta
         uses: volta-cli/action@v1
         with:
-          node-version: '22.14.0'
+          node-version: '24'
           yarn-version: '4.0.0'
 
       - name: Install Dependencies
@@ -41,7 +45,6 @@ jobs:
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
         working-directory: js
         run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
-          yarn publish-release          
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          npm publish packages/core
+          npm publish packages/lisa
+          npm publish packages/regression
