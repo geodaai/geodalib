@@ -1,0 +1,4 @@
+id: geoda-analysis
+version: 0.1.0
+name: GeoDa spatial analysis
+description: Run statistical spatial analysis (spatial weights, LISA, global Moran, colocation join counts, spatial regression, classification, rates, standardization, thiessen polygons, MST, cartogram) directly with @geoda/* in a node environment. Harness-agnostic; the kepler-assistant integration skill appends its map/table command surface on top of this.
