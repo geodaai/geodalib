@@ -17,7 +17,7 @@
     "node.js"
   ],
   "dependencies": {
-    "@geoda/core": "0.0.23",
-    "@geoda/lisa": "0.0.23"
+    "@geoda/core": "0.0.24",
+    "@geoda/lisa": "0.0.24"
   }
 }

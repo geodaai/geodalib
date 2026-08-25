@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.0.24](https://github.com/geodaai/geodalib/compare/@geoda/regression@0.0.23...@geoda/regression@0.0.24) (2026-08-25)
+
+### Bug Fixes
+
+* **js:** load WASM from local file in Node without fs/path polyfills ([fa1cb96](https://github.com/geodaai/geodalib/commit/fa1cb9629cfc7350af39b2232e52309ddd3ed1c3))
+
 ## [0.0.23](https://github.com/geodaai/geodalib/compare/@geoda/regression@0.0.2-alpha.4...@geoda/regression@0.0.23) (2026-08-24)
 
 ## 0.0.22 (2025-06-20)
