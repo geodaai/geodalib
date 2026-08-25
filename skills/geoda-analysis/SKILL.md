@@ -107,10 +107,13 @@ node analyze.mjs colocation --file data.geojson --variable highIncome --variable
 - Univariate → `localJoinCount` (Local Join Count). Bivariate →
   `localBiJoinCount` (Bivariate Local Join Count / no-colocation). For 3+
   variables use `multivariateLocalJoinCount` in a script.
-- **Version requirement**: join counts exist in `@geoda/lisa >= 0.0.23`. The
-  published 0.0.23 core/lisa packages have a node WASM loading regression, so
-  this plugin pins `0.0.22` and the `colocation` op errors out with guidance.
-  Once geoda-lib ships the fixed 0.0.24+, bump `package.json` to install it.
+- **Version requirement**: join counts exist in `@geoda/lisa >= 0.0.23`; the
+  plugin installs `@geoda/* >= 0.0.24` (the published 0.0.23 core/lisa builds
+  fail to load their WASM in node — do not downgrade to it).
+- **Bivariate requires no-colocation**: `--variable-b` computes the
+  no-colocation statistic and throws if any observation is `1` in BOTH
+  variables. Use mutually exclusive categories or a variable split with its
+  complement (e.g. `X` and `1-X`) to test the two states.
 - This is the **statistical** colocation test — for a visual "where do two
   variables overlap" overlay, do that with a map/SQL tool instead.
 
