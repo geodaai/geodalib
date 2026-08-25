@@ -32,6 +32,8 @@ export * from './clustering/redcap';
 export * from './clustering/skater';
 export * from './clustering/azp';
 export * from './clustering/maxp';
+export * from './clustering/spenc';
+export * from './clustering/pam';
 export * from './clustering/spatial-validation';
 export * from './clustering/make-spatial';
 

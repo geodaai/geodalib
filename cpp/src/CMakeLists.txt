@@ -41,6 +41,8 @@ set (CORE_SOURCE_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/clustering/spatial_validation.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/clustering/joincount_ratio.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/clustering/make_spatial.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/clustering/spenc.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/clustering/pam.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/clustering/clustering-api.cpp
     ${WEIGHTS_SOURCE_FILES}
 )

@@ -83,7 +83,6 @@ TEST(CLUSTERING, MAXP_GREEDY) {
   EXPECT_EQ(count, 5);
 }
 
-
 namespace {
 
 void expect_partition(const std::vector<std::vector<int>>& clusters, int num_obs) {
@@ -130,6 +129,56 @@ void expect_contiguous(const std::vector<std::vector<int>>& clusters,
 }
 
 }  // namespace
+
+TEST(CLUSTERING, SPENC) {
+  std::vector<std::vector<double>> data = {{1.0, 2.0, 3.0, 4.0, 5.0}};
+  std::vector<std::vector<int>> result = geoda::spenc(2, TEST_NEIGHBORS, data, "standardize", 1.0, 10, 123456789);
+  expect_partition(result, 5);
+  EXPECT_EQ(result.size(), 2u);
+}
+
+TEST(CLUSTERING, SPENC_DETERMINISTIC) {
+  // Same seed must produce identical clusters across runs.
+  std::vector<std::vector<double>> data = {{1.0, 2.0, 3.0, 4.0, 5.0}};
+  std::vector<std::vector<int>> r1 = geoda::spenc(2, TEST_NEIGHBORS, data, "standardize", 1.0, 10, 123456789);
+  std::vector<std::vector<int>> r2 = geoda::spenc(2, TEST_NEIGHBORS, data, "standardize", 1.0, 10, 123456789);
+  ASSERT_EQ(r1.size(), 2u);
+  ASSERT_EQ(r2.size(), 2u);
+  EXPECT_EQ(r1, r2);
+}
+
+TEST(CLUSTERING, SPENC_VALIDATES) {
+  std::vector<std::vector<double>> data = {{1.0, 2.0, 3.0, 4.0, 5.0}};
+  // k > n must be rejected (SCHC test pattern).
+  EXPECT_THROW(geoda::spenc(6, TEST_NEIGHBORS, data, "standardize", 1.0, 10, 123456789), std::invalid_argument);
+  // gamma must be positive.
+  EXPECT_THROW(geoda::spenc(2, TEST_NEIGHBORS, data, "standardize", 0.0, 10, 123456789), std::invalid_argument);
+  // n_init must be at least 1.
+  EXPECT_THROW(geoda::spenc(2, TEST_NEIGHBORS, data, "standardize", 1.0, 0, 123456789), std::invalid_argument);
+}
+
+TEST(CLUSTERING, PAM) {
+  std::vector<std::vector<double>> data = {{1.0, 2.0, 3.0, 4.0, 5.0}};
+  std::vector<std::vector<int>> result = geoda::pam(2, data, "euclidean", 100, "LAB", 0.01, 123456789);
+  expect_partition(result, 5);
+  EXPECT_EQ(result.size(), 2u);
+}
+
+TEST(CLUSTERING, PAM_MANHATTAN) {
+  // Manhattan distance is case-insensitively accepted.
+  std::vector<std::vector<double>> data = {{1.0, 2.0, 3.0, 4.0, 5.0}};
+  std::vector<std::vector<int>> result = geoda::pam(2, data, "MANHATTAN", 100, "BUILD", 0.01, 123456789);
+  expect_partition(result, 5);
+}
+
+TEST(CLUSTERING, PAM_VALIDATES) {
+  std::vector<std::vector<double>> data = {{1.0, 2.0, 3.0, 4.0, 5.0}};
+  // k > n must be rejected.
+  EXPECT_THROW(geoda::pam(6, data, "euclidean", 100, "LAB", 0.01, 123456789), std::invalid_argument);
+  // empty data must be rejected.
+  std::vector<std::vector<double>> empty;
+  EXPECT_THROW(geoda::pam(2, empty, "euclidean", 100, "LAB", 0.01, 123456789), std::invalid_argument);
+}
 
 TEST(CLUSTERING, MAKE_SPATIAL) {
   // cluster 0 = {0,1}, cluster 1 = {2} (already spatially contiguous)

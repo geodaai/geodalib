@@ -46,6 +46,14 @@ std::vector<std::vector<int>> maxp_tabu(const std::vector<std::vector<unsigned i
                                         const std::vector<std::vector<double>>& data, int iterations, int tabu_length,
                                         int conv_tabu, const std::string& distance_method, int rnd_seed);
 
+std::vector<std::vector<int>> spenc(unsigned int k, const std::vector<std::vector<unsigned int>>& neighbors,
+                                    const std::vector<std::vector<double>>& data, const std::string& scale_method,
+                                    double gamma, unsigned int n_init, int rnd_seed);
+
+std::vector<std::vector<int>> pam(unsigned int k, const std::vector<std::vector<double>>& data,
+                                  const std::string& distance_method, int maxiter, const std::string& initializer,
+                                  double fasttol, int rnd_seed);
+
 ValidationResult spatial_validation(const std::vector<int>& clusters,
                                     const std::vector<std::vector<unsigned int>>& neighbors,
                                     const GeometryCollection& geoms);

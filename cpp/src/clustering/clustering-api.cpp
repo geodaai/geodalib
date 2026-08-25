@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: MIT
 // Copyright contributors to the geodalib project
 
+#include <algorithm>
+#include <cctype>
+#include <map>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -14,7 +17,8 @@
 #include "spatial_validation.h"
 #include "geofeature.h"
 #include "joincount_ratio.h"
-#include <map>
+#include "cluster-utils.h"
+#include "pam.h"
 #include "../data/data.h"
 #include "../weights/vector-weight.h"
 
@@ -196,6 +200,79 @@ std::vector<std::vector<int>> geoda::maxp_tabu(const std::vector<std::vector<uns
   std::vector<std::vector<int>> result = mp.GetClusters();
   delete w;
   return result;
+}
+
+std::vector<std::vector<int>> geoda::pam(unsigned int k, const std::vector<std::vector<double>>& data,
+                                         const std::string& distance_method, int maxiter,
+                                         const std::string& initializer, double fasttol, int rnd_seed) {
+  if (data.empty()) {
+    throw std::invalid_argument("pam: data must contain at least one variable");
+  }
+  const size_t num_obs = data[0].size();
+  if (k == 0 || k > num_obs) {
+    throw std::invalid_argument("pam: k must be between 1 and the number of observations");
+  }
+  // PAM is sensitive to variable scales (distances drive both medoid selection
+  // and assignment), so standardize by default like the other clustering APIs.
+  std::vector<std::vector<double>> scaled = scale_data(data, "standardize");
+
+  const int n = static_cast<int>(num_obs);
+  const int n_cols = static_cast<int>(scaled.size());
+
+  double** matrix = new double*[n];
+  int** mask = new int*[n];
+  for (int i = 0; i < n; ++i) {
+    matrix[i] = new double[n_cols];
+    mask[i] = new int[n_cols];
+    for (int j = 0; j < n_cols; ++j) mask[i][j] = 1;
+  }
+  // distancematrix() is row-wise: matrix[obs][var].
+  for (int i = 0; i < n_cols; ++i) {
+    for (int r = 0; r < n; ++r) matrix[r][i] = scaled[i][r];
+  }
+
+  char dist = 'e';
+  std::string dm = distance_method;
+  std::transform(dm.begin(), dm.end(), dm.begin(), [](unsigned char c) { return std::tolower(c); });
+  if (dm == "manhattan") dist = 'b';
+
+  double* weight = new double[n_cols];
+  for (int i = 0; i < n_cols; ++i) weight[i] = 1.0;
+
+  double** distances = distancematrix(n, n_cols, matrix, mask, weight, dist, 0);
+  RawDistMatrix dmr(distances);
+  PAMInitializer* init = (initializer == "LAB") ? static_cast<PAMInitializer*>(new LAB(&dmr, rnd_seed))
+                                                : static_cast<PAMInitializer*>(new BUILD(&dmr));
+  FastPAM pam(n, &dmr, init, static_cast<int>(k), maxiter, fasttol);
+  pam.run();
+  std::vector<int> results = pam.getResults();
+
+  delete init;
+  delete[] weight;
+  for (int i = 1; i < n; ++i) delete[] distances[i];
+  delete[] distances;
+  for (int i = 0; i < n; ++i) {
+    delete[] matrix[i];
+    delete[] mask[i];
+  }
+  delete[] matrix;
+  delete[] mask;
+
+  // PAM::getResults() numbers clusters from 1 (matching the reference
+  // implementation); convert to 0-based labels for the public API. A label
+  // outside [1, k] can only appear when distances are degenerate (all-zero
+  // assignment), so reject that rather than indexing out of bounds.
+  std::vector<std::vector<int>> clusters(k);
+  for (int i = 0; i < n; ++i) {
+    if (results[i] < 1 || results[i] > static_cast<int>(k)) {
+      throw std::invalid_argument("pam: clustering produced an invalid label");
+    }
+    clusters[results[i] - 1].push_back(i);
+  }
+  clusters.erase(std::remove_if(clusters.begin(), clusters.end(),
+                                [](const std::vector<int>& c) { return c.empty(); }),
+                 clusters.end());
+  return clusters;
 }
 
 ValidationResult geoda::spatial_validation(const std::vector<int>& clusters,

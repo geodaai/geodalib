@@ -1111,6 +1111,46 @@ export interface GeoDaModule {
   ): VecVecInt;
 
   /**
+   * Spatially-Encouraged Spectral Clustering (SPENC)
+   * @param k the number of clusters
+   * @param neighbors spatial weights matrix as adjacency list
+   * @param data the multiple data variables
+   * @param scaleMethod the scaling method (raw, standardize)
+   * @param gamma the RBF kernel bandwidth parameter
+   * @param nInit the number of k-means restarts
+   * @param rndSeed the random seed
+   */
+  spenc(
+    k: UnsignedInt,
+    neighbors: VecVecUInt,
+    data: VecVecDouble,
+    scaleMethod: string,
+    gamma: Double,
+    nInit: UnsignedInt,
+    rndSeed: number
+  ): VecVecInt;
+
+  /**
+   * Partitioning Around Medoids (PAM) / k-medoids clustering
+   * @param k the number of clusters
+   * @param data the multiple data variables
+   * @param distanceMethod the distance metric (euclidean, manhattan)
+   * @param maxiter the maximum number of iterations
+   * @param initializer the initializer (BUILD, LAB)
+   * @param fasttol the fast swap tolerance
+   * @param rndSeed the random seed
+   */
+  pam(
+    k: UnsignedInt,
+    data: VecVecDouble,
+    distanceMethod: string,
+    maxiter: number,
+    initializer: string,
+    fasttol: Double,
+    rndSeed: number
+  ): VecVecInt;
+
+  /**
    * Spatial validation of a clustering result
    */
   spatialValidation(

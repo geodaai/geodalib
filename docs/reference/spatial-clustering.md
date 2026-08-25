@@ -12,6 +12,7 @@ outline: deep
 - [k-Means](/api/functions/kmeans)
 - [k-Medians](/api/functions/kmedians)
 - [k-Medoids](/api/functions/kmedoids)
+- [PAM](/api/functions/pam)
 - [Spectral Clustering](/api/functions/spectralClustering)
 - [Hierarchical Clustering](/api/functions/hierarchicalClustering)
 
@@ -26,5 +27,6 @@ outline: deep
 
 - [SKATER](/api/functions/skater)
 - [REDCAP](/api/functions/redcap)
+- [SPENC](/api/functions/spenc)
 - [AZP](/api/functions/azp)
 - [Max-p](/api/functions/max-p)
