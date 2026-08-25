@@ -45,6 +45,6 @@ jobs:
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
         working-directory: js
         run: |
-          npm publish packages/core
-          npm publish packages/lisa
-          npm publish packages/regression
+          cd packages/core && npm publish
+          cd ../lisa && npm publish
+          cd ../regression && npm publish
