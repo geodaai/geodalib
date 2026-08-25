@@ -589,7 +589,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@geoda/common@npm:^0.0.23, @geoda/common@workspace:packages/common":
+"@geoda/common@npm:^0.0.24, @geoda/common@workspace:packages/common":
   version: 0.0.0-use.local
   resolution: "@geoda/common@workspace:packages/common"
   dependencies:
@@ -601,7 +601,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@geoda/core@workspace:packages/core"
   dependencies:
-    "@geoda/common": "npm:^0.0.23"
+    "@geoda/common": "npm:^0.0.24"
     "@jest/globals": "npm:^29.7.0"
     "@loaders.gl/arrow": "npm:^4.1.0-alpha.4"
     "@loaders.gl/schema": "npm:^4.1.0-alpha.4"
@@ -617,7 +617,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@geoda/lisa@workspace:packages/lisa"
   dependencies:
-    "@geoda/common": "npm:^0.0.23"
+    "@geoda/common": "npm:^0.0.24"
     "@loaders.gl/arrow": "npm:^4.1.0-alpha.4"
     "@loaders.gl/schema": "npm:^4.1.0-alpha.4"
     "@types/geojson": "npm:^7946.0.10"
@@ -632,7 +632,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@geoda/regression@workspace:packages/regression"
   dependencies:
-    "@geoda/common": "npm:^0.0.23"
+    "@geoda/common": "npm:^0.0.24"
     "@types/jest": "npm:^29.5.12"
     jest: "npm:^29.7.0"
     ts-jest: "npm:^29.1.2"
