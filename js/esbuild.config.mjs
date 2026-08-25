@@ -22,8 +22,21 @@ export const createBaseConfig = (options = {}) => {
 
 // Build function for different formats
 export const buildFormat = async (config, format, outfile) => {
+  // The node-polyfills plugin (esbuild-plugin-polyfill-node) defaults
+  // polyfills.fs/path to empty objects, so it turns the Emscripten glue's
+  // require("fs")/require("path") into `{}` and injects a fake __dirname,
+  // which makes initWASM() fail in Node ("readFileSync is not a function").
+  // The CJS build targets Node (platform: 'node'), where fs/path/process/
+  // __dirname are native, so the polyfills must not be applied there. Only
+  // the ESM build (browser/CDN) needs them.
+  const plugins =
+    format === 'cjs'
+      ? config.plugins?.filter((plugin) => plugin?.name !== 'node-polyfills')
+      : config.plugins;
+
   const result = await esbuild.build({
     ...config,
+    plugins,
     format,
     ...(format === 'cjs' ? { platform: 'node', target: ['es2017'] } : {}),
     define: {
