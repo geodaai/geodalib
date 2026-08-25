@@ -1,0 +1,14 @@
+{
+  "name": "geoda-analysis",
+  "description": "GeoDa spatial analysis: LISA, join-count colocation, global Moran, spatial regression, classification, rates, standardization, thiessen, MST, cartogram — run directly against @geoda/* in a node environment.",
+  "version": "0.0.1",
+  "author": {
+    "name": "GeoDa AI contributors"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/geodaai/geodalib",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/geodaai/geodalib.git"
+  }
+}

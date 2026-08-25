@@ -1,0 +1,16 @@
+{
+  "name": "@geoda/skills",
+  "version": "0.0.1",
+  "private": true,
+  "description": "GeoDa spatial analysis skill + node driver for agent harnesses (Claude Code plugin). Installed as a Claude Code plugin, the @geoda/* deps are auto-installed into the plugin directory.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@geoda/core": ">=0.0.24",
+    "@geoda/lisa": ">=0.0.24",
+    "@geoda/regression": ">=0.0.24"
+  }
+}

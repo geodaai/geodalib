@@ -1,0 +1,16 @@
+{
+  "name": "geodalib",
+  "description": "GeoDa AI spatial analysis skills and plugins",
+  "owner": {
+    "name": "GeoDa AI contributors",
+    "email": "lixun910@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "geoda-analysis",
+      "source": "./skills/geoda-analysis",
+      "description": "GeoDa spatial analysis: LISA, join-count colocation, global Moran, spatial regression, classification, rates, standardization, thiessen, MST, cartogram — run directly against @geoda/* in a node environment.",
+      "version": "0.0.1"
+    }
+  ]
+}
