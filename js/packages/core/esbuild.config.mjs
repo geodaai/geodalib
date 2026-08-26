@@ -27,6 +27,7 @@ const baseConfig = createBaseConfig({
 // Build all formats
 Promise.all([
   buildFormat(baseConfig, 'esm', 'dist/index.js'),
+  buildFormat(baseConfig, 'node-esm', 'dist/index.node.mjs'),
   buildFormat(baseConfig, 'cjs', 'dist/index.cjs'),
 ]).catch(error => {
   console.error(error);

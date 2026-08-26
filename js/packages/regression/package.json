@@ -14,8 +14,13 @@
   "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.js"
+      "types": "./dist/src/index.d.ts",
+      "node": {
+        "import": "./dist/index.node.mjs",
+        "require": "./dist/index.cjs"
+      },
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "files": [
